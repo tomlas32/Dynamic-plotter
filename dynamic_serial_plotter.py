@@ -64,6 +64,8 @@ class SerialDynamicPlotter(QMainWindow):
         self.com_port_names = []                                                                    # list for storing active COM ports
         self.data_records = []                                                                      # list for storing sensor data for export
         self.buffer_size = 7000
+        self.is_connected = False
+        self.is_paused = False
 
 
         # define GUI window dimentions characteristics
@@ -89,6 +91,11 @@ class SerialDynamicPlotter(QMainWindow):
         # create drop down widgets for choosing COM port
         self.com_port_combo = QComboBox()
         plot_widget_layout.addWidget(self.com_port_combo)
+
+        # create connect button for establishing serial communication
+        self.connect_button = QPushButton("Connect")
+        plot_widget_layout.addWidget(self.connect_button)
+        self.connect_button.clicked.connect(self.toggle_connect)
 
         # create instance of serial monitor
         self.serial_monitor = SerialPortMonitor()
@@ -119,7 +126,26 @@ class SerialDynamicPlotter(QMainWindow):
         #self.serial_port.setPortName(self.com_port_names[index])
         self.serial_port.setPortName(self.com_port_combo.currentText())
         #self.serial_port.readyRead.connect(self.receive_serial_data)
+
+    # define toggle function for switching between connect and pause states
+    def toggle_connect(self):
+        if self.connect_button.text() == "Connect":
+            self.port_connect()
+            self.connect_button.setText("Pause")
+        else:
+            self.port_pause()
+            self.connect_button.setText("Connect")
+
+    # function for establishing serial communication
+    def port_connect(self):
+        self.is_paused = False
+        self.is_connected = True
     
+    # function for pausing data stream and plotting
+    def port_pause(self):
+        self.is_paused = True
+        self.is_connected = True
+
     # function to receive serial data
     def receive_data(self):
         while self.serial_port.canReadLine():
@@ -129,7 +155,7 @@ class SerialDynamicPlotter(QMainWindow):
                 sensor_name = "P"
                 sensor_value = float(values[4].strip())
                 formatted_value = "{:.2f}".format(sensor_value)
-                if sensor_name in self.sensor_data:
+                if sensor_name in self.sensor_data and self.is_connected and not self.is_paused:
                     data_buffer = self.sensor_data[sensor_name]['buffer']
                     data_buffer.push(formatted_value)
                     self.sensor_data[sensor_name]['plot_data'].setData(data_buffer.get_data())
@@ -143,7 +169,6 @@ if __name__ == "__main__":
 
     viewer_window = SerialDynamicPlotter()
     viewer_window.add_sensor("P", "r")
-
     if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                        # set to Read-only from sensors
         viewer_window.show()
         sys.exit(application.exec_())
