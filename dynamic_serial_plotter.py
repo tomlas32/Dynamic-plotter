@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import pyqtgraph as pgt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox
-from PyQt5.QtSerialPort import QSerialPort
+from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 
 
@@ -35,13 +35,14 @@ class SerialDynamicPlotter(QMainWindow):
 
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
+        self.com_port_names = []                                                                    # list for storing active COM ports
 
 
         # define GUI window dimentions characteristics
-        self.setWindowTitle("Serial Dynamic Viewer")
+        self.setWindowTitle("Serial Port Dynamic Viewer")
         self.setGeometry(100, 100, 1024, 768)
 
-        # define plot widget characteristics
+        # define plot area widget characteristics
         self.plot_widget = pgt.PlotWidget()
         self.plot_widget.setBackground("#000000")
         self.plot_widget.setLabel("left", "Value")
@@ -51,7 +52,38 @@ class SerialDynamicPlotter(QMainWindow):
         self.plot_widget.setClipToView(True)
 
         # build the viewer widgets
-        plot_widget_layout = QVBoxLayout()
+        plot_widget_layout = QVBoxLayout()                                                          # vertical layout
+        viewer_widget = QWidget()                                                                   # viewer widget
+        plot_widget_layout.addWidget(self.plot_widget)
+        viewer_widget.setLayout(plot_widget_layout)
+        self.setCentralWidget(viewer_widget)
+
+        # fetch currently available COM ports
+        self.available_ports = QSerialPortInfo().availablePorts()
+        self.com_port_names = [port.portName() for port in self.available_ports]
+
+        # create drop down widgets for choosing COM port
+        self.com_port_combo = QComboBox()
+        self.com_port_combo.addItems([str(com) for com in self.com_port_names])
+        self.com_port_combo.setCurrentIndex(0)
+        self.com_port_combo.currentIndexChanged.connect(self.change_com_port)
+        plot_widget_layout.addWidget(self.com_port_combo)
+
+
+        # initialize and configure a QSerialPort object for serial communication
+        self.serial_port = QSerialPort()
+        self.serial_port.setPortName("COM11")
+        self.serial_port.setBaudRate(9600)
+        #self.serial_port.readyRead.connect(self.receive_serial_data)
+        
+    
+    def add_sensor(self, name, color):
+        pass
+
+    def change_com_port(self, index):
+        #self.serial_port.setPortName(self.com_port_names[index])
+        self.serial_port.setPortName(self.com_port_combo.currentText())
+        #self.serial_port.readyRead.connect(self.receive_serial_data)
 
 
 if __name__ == "__main__":
@@ -60,8 +92,11 @@ if __name__ == "__main__":
     viewer_window = SerialDynamicPlotter()
     viewer_window.add_sensor("P", "r")
 
-    if viewer_window.serial_port.open(QSerialPort.ReadOnly):
+    if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                        # set to Read-only from sensors
         viewer_window.show()
         sys.exit(application.exec_())
+    else:
+        QMessageBox.warning(viewer_window, "Error", "Failed to establish serial port connection")
+        sys.exit(1)
 
 
