@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import pyqtgraph as pgt
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 
@@ -94,7 +94,9 @@ class SerialDynamicPlotter(QMainWindow):
 
         # create connect button for establishing serial communication
         self.connect_button = QPushButton("Connect")
+        self.status_label = QLabel("")                                                              # reporting on successful connection/disconnection
         plot_widget_layout.addWidget(self.connect_button)
+        plot_widget_layout.addWidget(self.status_label)
         self.connect_button.clicked.connect(self.toggle_connect)
 
         # create instance of serial monitor
@@ -104,7 +106,6 @@ class SerialDynamicPlotter(QMainWindow):
         
         # initialize and configure a QSerialPort object for serial communication
         self.serial_port = QSerialPort()
-        self.serial_port.setPortName("COM11")
         self.serial_port.setBaudRate(9600)
         self.serial_port.readyRead.connect(self.receive_data)
 
@@ -130,10 +131,20 @@ class SerialDynamicPlotter(QMainWindow):
     # define toggle function for switching between connect and pause states
     def toggle_connect(self):
         if self.connect_button.text() == "Connect":
-            self.port_connect()
-            self.connect_button.setText("Pause")
+            port_name = self.com_port_combo.currentText()
+            self.serial_port.setPortName(port_name)
+            if not self.serial_port.isOpen():  # Check if the port is not already open
+                if self.serial_port.open(QSerialPort.ReadOnly):
+                    self.port_connect()
+                    self.connect_button.setText("Pause")
+                    self.status_label.setText("Connected to " + port_name)
+                else:
+                    self.status_label.setText("Failed to connect to " + port_name)
+            else:
+                self.status_label.setText("Port already open")
         else:
             self.port_pause()
+            self.serial_port.close()  # Close the port when pausing
             self.connect_button.setText("Connect")
 
     # function for establishing serial communication
@@ -166,14 +177,15 @@ class SerialDynamicPlotter(QMainWindow):
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)                                                            # creates instance of QApplication
-
     viewer_window = SerialDynamicPlotter()
     viewer_window.add_sensor("P", "r")
-    if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                        # set to Read-only from sensors
-        viewer_window.show()
-        sys.exit(application.exec_())
-    else:
-        QMessageBox.warning(viewer_window, "Error", "Failed to establish serial port connection")
-        sys.exit(1)
+    viewer_window.show()
+    sys.exit(application.exec_())
+    # if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                        # set to Read-only from sensors
+    #     viewer_window.show()
+    #     sys.exit(application.exec_())
+    # else:
+    #     QMessageBox.warning(viewer_window, "Error", "Failed to establish serial port connection")
+    #     sys.exit(1)
 
 
