@@ -5,6 +5,7 @@ from PyQt5.QtCore import QTimer, QObject, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
+import time
 
 
 #define buffer - using circular approach
@@ -107,6 +108,7 @@ class SerialDynamicPlotter(QMainWindow):
         # initialize and configure a QSerialPort object for serial communication
         self.serial_port = QSerialPort()
         self.serial_port.setBaudRate(9600)
+        self.start_time = time.time()
         self.serial_port.readyRead.connect(self.receive_data)
 
     def update_com_port_combo(self):
@@ -159,6 +161,7 @@ class SerialDynamicPlotter(QMainWindow):
 
     # function to receive serial data
     def receive_data(self):
+        
         while self.serial_port.canReadLine():
             try:
                 data = self.serial_port.readLine().data().decode("utf-8").strip()
@@ -170,7 +173,9 @@ class SerialDynamicPlotter(QMainWindow):
                     data_buffer = self.sensor_data[sensor_name]['buffer']
                     data_buffer.push(formatted_value)
                     self.sensor_data[sensor_name]['plot_data'].setData(data_buffer.get_data())
-                    self.data_records.append([sensor_name, sensor_value])
+                    timestamp = format(float(time.time() - self.start_time), ".2f")
+                    self.data_records.append([sensor_name, timestamp, formatted_value])
+                    time.sleep(0.01)
             except(UnicodeDecodeError, IndexError, ValueError):
                 pass
 
