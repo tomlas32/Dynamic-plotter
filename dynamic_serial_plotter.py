@@ -125,10 +125,8 @@ class SerialDynamicPlotter(QMainWindow):
             'plot_data': self.plot_widget.plot(pen=pgt.mkPen(color, width=2), name=name),
         }
 
-    def change_com_port(self, index):
-        #self.serial_port.setPortName(self.com_port_names[index])
+    def change_com_port(self):
         self.serial_port.setPortName(self.com_port_combo.currentText())
-        #self.serial_port.readyRead.connect(self.receive_serial_data)
 
     # define toggle function for switching between connect and pause states
     def toggle_connect(self):
@@ -161,7 +159,6 @@ class SerialDynamicPlotter(QMainWindow):
 
     # function to receive serial data
     def receive_data(self):
-        
         while self.serial_port.canReadLine():
             try:
                 data = self.serial_port.readLine().data().decode("utf-8").strip()
