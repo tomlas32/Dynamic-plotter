@@ -175,7 +175,23 @@ class SerialDynamicPlotter(QMainWindow):
                     time.sleep(0.01)
             except(UnicodeDecodeError, IndexError, ValueError):
                 pass
-
+    
+    def export_data(self):
+        if len(self.data_records) > 0:
+            filename, _ = QFileDialog.getSaveFileName(self, "Export Data", "", "CSV Files (*.csv)")
+            if filename:
+                try:
+                    with open(filename, "w", newline="") as file:
+                        writer = csv.writer(file)
+                        writer.writerow(["Sensor", "Time", "Value"])
+                        writer.writerows(self.data_records)
+                    QMessageBox.information(self, "Success", "Data successfully exported to " + filename)
+                except Exception as e:
+                    QMessageBox.warning(self, "Error", "Failed to export data: " + str(e))
+            else:
+                QMessageBox.warning(self, "Export error", "Invalid file name.")
+        else:
+            QMessageBox.warning(self, "Export error", "No data to export.")
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)                                                            # creates instance of QApplication
@@ -183,7 +199,7 @@ if __name__ == "__main__":
     viewer_window.add_sensor("P", "r")
     viewer_window.show()
     sys.exit(application.exec_())
-    # if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                        # set to Read-only from sensors
+    # if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                      # set to Read-only from sensors
     #     viewer_window.show()
     #     sys.exit(application.exec_())
     # else:
