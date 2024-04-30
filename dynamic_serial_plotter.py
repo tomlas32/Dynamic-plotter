@@ -100,6 +100,11 @@ class SerialDynamicPlotter(QMainWindow):
         plot_widget_layout.addWidget(self.status_label)
         self.connect_button.clicked.connect(self.toggle_connect)
 
+        # create export button
+        self.export_button = QPushButton("Export")
+        plot_widget_layout.addWidget(self.export_button)
+        self.export_button.clicked.connect(self.export_data)
+
         # create instance of serial monitor
         self.serial_monitor = SerialPortMonitor()
         self.serial_monitor.port_changed.connect(self.update_com_port_combo)
@@ -108,8 +113,8 @@ class SerialDynamicPlotter(QMainWindow):
         # initialize and configure a QSerialPort object for serial communication
         self.serial_port = QSerialPort()
         self.serial_port.setBaudRate(9600)
-        self.start_time = time.time()
         self.serial_port.readyRead.connect(self.receive_data)
+        
 
     def update_com_port_combo(self):
         current_port = self.com_port_combo.currentText()
@@ -151,6 +156,7 @@ class SerialDynamicPlotter(QMainWindow):
     def port_connect(self):
         self.is_paused = False
         self.is_connected = True
+        self.start_time = time.time()
     
     # function for pausing data stream and plotting
     def port_pause(self):
