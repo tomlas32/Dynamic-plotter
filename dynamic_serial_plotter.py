@@ -3,6 +3,7 @@ import numpy as np
 import pyqtgraph as pgt
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal, Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
+from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 import time
@@ -71,7 +72,7 @@ class SerialDynamicPlotter(QMainWindow):
 
         ########## define GUI window dimentions characteristics #########################
         self.setWindowTitle("Serial Port Dynamic Viewer")
-        self.setGeometry(100, 100, 1024, 500)
+        self.setFixedSize(1024, 500)
 
         ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
@@ -125,11 +126,15 @@ class SerialDynamicPlotter(QMainWindow):
 
         # experiment label and input field
         self.exp_layout.addWidget(QLabel("Experiment Name"))
-        self.exp_layout.addWidget(QLineEdit())
+        self.exp_input = QLineEdit()
+        self.exp_input.setFixedWidth(200)
+        self.exp_layout.addWidget(self.exp_input)
 
         # sample rate label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
-        self.sample_layout.addWidget(QLineEdit())
+        self.sample_input = QLineEdit()
+        self.sample_input.setFixedWidth(200)
+        self.sample_layout.addWidget(self.sample_input)
 
         # created COM label and dropdown field and add to layout
         self.com_port_combo = QComboBox()
