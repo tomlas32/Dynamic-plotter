@@ -186,8 +186,10 @@ class SerialDynamicPlotter(QMainWindow):
         exp_name = self.exp_input.text()
         comport_index = self.com_port_combo.currentText()
 
-        if len(exp_name) and len(comport_index) > 0:
+        if len(exp_name.strip()) and len(comport_index) > 0:
             self.connect_button.setEnabled(True)
+        else:
+            self.connect_button.setEnabled(False)
                
 
     def update_com_port_combo(self):
