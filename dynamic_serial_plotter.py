@@ -2,7 +2,7 @@ import sys
 import numpy as np
 import pyqtgraph as pgt
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel
+from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 import time
@@ -69,11 +69,11 @@ class SerialDynamicPlotter(QMainWindow):
         self.is_paused = False
 
 
-        # define GUI window dimentions characteristics
+        ########## define GUI window dimentions characteristics #########################
         self.setWindowTitle("Serial Port Dynamic Viewer")
         self.setGeometry(100, 100, 1024, 768)
 
-        # define plot area widget characteristics
+        ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
         self.plot_widget.setBackground("#000000")
         self.plot_widget.setLabel("left", "Value")
@@ -82,27 +82,43 @@ class SerialDynamicPlotter(QMainWindow):
         self.plot_widget.setMouseEnabled(x=True, y=False)
         self.plot_widget.setClipToView(True)
 
-        # build the viewer widgets
-        plot_widget_layout = QVBoxLayout()                                                          # vertical layout
-        viewer_widget = QWidget()                                                                   # viewer widget
-        plot_widget_layout.addWidget(self.plot_widget)
-        viewer_widget.setLayout(plot_widget_layout)
-        self.setCentralWidget(viewer_widget)
+        ########## build the viewer widgets #############################################
+        main_layout = QHBoxLayout()                                                                 # main layout to store 2 VBoxes
+        window = QWidget()                                                                          # main window
+
+        # left panel Widgets
+        left_layout = QVBoxLayout()                                                                
+        left_panel = QWidget()                                                                    
+        left_panel.setLayout(left_layout)
+        left_layout.addWidget(self.plot_widget)     
+
+        # right panel Widgets
+        right_layout = QVBoxLayout()                                                                # layout for data entry
+        right_panel = QWidget()
+        right_panel.setLayout(right_layout)
+
+        # add to main layout
+        main_layout.addWidget(left_panel)                                                  
+        main_layout.addWidget(right_panel) 
+
+        # set main window layout
+        window.setLayout(main_layout)
+        self.setCentralWidget(window)                                                               # set the main widget as the centre of the application gui                           
 
         # create drop down widgets for choosing COM port
         self.com_port_combo = QComboBox()
-        plot_widget_layout.addWidget(self.com_port_combo)
+        left_layout.addWidget(self.com_port_combo)
 
         # create connect button for establishing serial communication
         self.connect_button = QPushButton("Connect")
         self.status_label = QLabel("")                                                              # reporting on successful connection/disconnection
-        plot_widget_layout.addWidget(self.connect_button)
-        plot_widget_layout.addWidget(self.status_label)
+        left_layout.addWidget(self.connect_button)
+        left_layout.addWidget(self.status_label)
         self.connect_button.clicked.connect(self.toggle_connect)
 
         # create export button
         self.export_button = QPushButton("Export")
-        plot_widget_layout.addWidget(self.export_button)
+        left_layout.addWidget(self.export_button)
         self.export_button.clicked.connect(self.export_data)
 
         # create instance of serial monitor
@@ -135,7 +151,7 @@ class SerialDynamicPlotter(QMainWindow):
 
     # define toggle function for switching between connect and pause states
     def toggle_connect(self):
-        if self.connect_button.text() == "Connect":
+        if self.connect_button.text() == "Connect" or self.connect_button.text() == "Resume":
             port_name = self.com_port_combo.currentText()
             self.serial_port.setPortName(port_name)
             if not self.serial_port.isOpen():  # Check if the port is not already open
@@ -150,7 +166,7 @@ class SerialDynamicPlotter(QMainWindow):
         else:
             self.port_pause()
             self.serial_port.close()  # Close the port when pausing
-            self.connect_button.setText("Connect")
+            self.connect_button.setText("Resume")
 
     # function for establishing serial communication
     def port_connect(self):
