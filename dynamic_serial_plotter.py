@@ -83,42 +83,42 @@ class SerialDynamicPlotter(QMainWindow):
         self.plot_widget.setClipToView(True)
 
         ########## build the viewer widgets #############################################
-        main_layout = QHBoxLayout()                                                                 # main layout to store 2 VBoxes
-        window = QWidget()                                                                          # main window
+        self.main_layout = QHBoxLayout()                                                                 # main layout to store 2 VBoxes
+        self.window = QWidget()                                                                          # main window
 
         # left panel Widgets
-        left_layout = QVBoxLayout()                                                                
-        left_panel = QWidget()                                                                    
-        left_panel.setLayout(left_layout)
-        left_layout.addWidget(self.plot_widget)     
+        self.left_layout = QVBoxLayout()                                                                
+        self.left_panel = QWidget()                                                                    
+        self.left_panel.setLayout(self.left_layout)
+        self.left_layout.addWidget(self.plot_widget)     
 
         # right panel Widgets
-        right_layout = QVBoxLayout()                                                                # layout for data entry
-        right_panel = QWidget()
-        right_panel.setLayout(right_layout)
+        self.right_layout = QVBoxLayout()                                                                # layout for data entry
+        self.right_panel = QWidget()
+        self.right_panel.setLayout(self.right_layout)
 
         # add to main layout
-        main_layout.addWidget(left_panel)                                                  
-        main_layout.addWidget(right_panel) 
+        self.main_layout.addWidget(self.left_panel)                                                  
+        self.main_layout.addWidget(self.right_panel) 
 
         # set main window layout
-        window.setLayout(main_layout)
-        self.setCentralWidget(window)                                                               # set the main widget as the centre of the application gui                           
+        self.window.setLayout(self.main_layout)
+        self.setCentralWidget(self.window)                                                               # set the main widget as the centre of the application gui                           
 
         # create drop down widgets for choosing COM port
         self.com_port_combo = QComboBox()
-        left_layout.addWidget(self.com_port_combo)
+        self.left_layout.addWidget(self.com_port_combo)
 
         # create connect button for establishing serial communication
         self.connect_button = QPushButton("Connect")
         self.status_label = QLabel("")                                                              # reporting on successful connection/disconnection
-        left_layout.addWidget(self.connect_button)
-        left_layout.addWidget(self.status_label)
+        self.left_layout.addWidget(self.connect_button)
+        self.left_layout.addWidget(self.status_label)
         self.connect_button.clicked.connect(self.toggle_connect)
 
         # create export button
         self.export_button = QPushButton("Export")
-        left_layout.addWidget(self.export_button)
+        self.left_layout.addWidget(self.export_button)
         self.export_button.clicked.connect(self.export_data)
 
         # create instance of serial monitor
