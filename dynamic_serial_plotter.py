@@ -3,7 +3,7 @@ import numpy as np
 import pyqtgraph as pgt
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal, Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
-from PyQt5.QtWidgets import QSizePolicy
+from PyQt5.QtWidgets import QSizePolicy, QSpacerItem
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 import time
@@ -108,10 +108,16 @@ class SerialDynamicPlotter(QMainWindow):
         self.top_container_widget = QWidget()
         self.top_container_widget.setLayout(self.top_container)
 
+        # create spacers for adjusting layout positions
+        spacer_1 = QSpacerItem(300, 50, QSizePolicy.Fixed, QSizePolicy.Fixed)
+        spacer_2 = QSpacerItem(300, 50, QSizePolicy.Fixed, QSizePolicy.Fixed)
+
         # add to right panel layouts
         self.top_container.addLayout(self.LCD_layout)
+        self.top_container.addSpacerItem(spacer_1)
         self.top_container.addLayout(self.exp_layout)
         self.top_container.addLayout(self.sample_layout)
+        self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
         self.top_container.addLayout(self.buttons_layout)
 
