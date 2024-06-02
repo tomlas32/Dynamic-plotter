@@ -136,7 +136,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.exp_input = QLineEdit()
         self.exp_input.setFixedWidth(200)
         self.exp_layout.addWidget(self.exp_input)
-        self.exp_input.textChanged.connect(self.check_connection)
+        self.exp_input.textChanged.connect(self.check_condition)
 
         # sample rate label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
@@ -182,7 +182,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.serial_port.readyRead.connect(self.receive_data)
 
     # function for checking if all condition for establishin connection are met
-    def check_connection(self):
+    def check_condition(self):
         exp_name = self.exp_input.text()
         comport_index = self.com_port_combo.currentText()
 
