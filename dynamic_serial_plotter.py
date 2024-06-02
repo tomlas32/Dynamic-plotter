@@ -128,6 +128,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.LCD_display = QLCDNumber()
         self.LCD_display.setFixedHeight(80)
         self.LCD_display.setFixedWidth(300)
+        self.LCD_display.setDigitCount(8)
         self.LCD_layout.addWidget(self.LCD_display)
 
         # experiment label and input field
@@ -135,6 +136,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.exp_input = QLineEdit()
         self.exp_input.setFixedWidth(200)
         self.exp_layout.addWidget(self.exp_input)
+        self.exp_input.textChanged.connect(self.check_connection)
 
         # sample rate label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
@@ -150,6 +152,7 @@ class SerialDynamicPlotter(QMainWindow):
         # create connect and export buttons and add to layout
         self.connect_button = QPushButton("Connect")
         self.buttons_layout.addWidget(self.connect_button)
+        self.connect_button.setEnabled(False)
         self.connect_button.clicked.connect(self.toggle_connect)
 
         self.export_button = QPushButton("Export")
@@ -177,7 +180,15 @@ class SerialDynamicPlotter(QMainWindow):
         self.serial_port = QSerialPort()
         self.serial_port.setBaudRate(9600)
         self.serial_port.readyRead.connect(self.receive_data)
-        
+
+    # function for checking if all condition for establishin connection are met
+    def check_connection(self):
+        exp_name = self.exp_input.text()
+        comport_index = self.com_port_combo.currentText()
+
+        if len(exp_name) and len(comport_index) > 0:
+            self.connect_button.setEnabled(True)
+               
 
     def update_com_port_combo(self):
         current_port = self.com_port_combo.currentText()
@@ -242,6 +253,7 @@ class SerialDynamicPlotter(QMainWindow):
                     timestamp = format(float(time.time() - self.start_time), ".2f")
                     self.data_records.append([sensor_name, timestamp, formatted_value])
                     time.sleep(0.01)
+                self.LCD_display.display(formatted_value)
             except(UnicodeDecodeError, IndexError, ValueError):
                 pass
     
