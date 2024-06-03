@@ -121,6 +121,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
         self.top_container.addLayout(self.buttons_layout)
+        self.top_container.addSpacerItem(spacer_2)
 
         self.right_layout.addWidget(self.top_container_widget, alignment=Qt.AlignTop)
         
@@ -171,6 +172,10 @@ class SerialDynamicPlotter(QMainWindow):
         # create connect button for establishing serial communication
         self.status_label = QLabel("")                                                              # reporting on successful connection/disconnection
         self.left_layout.addWidget(self.status_label)
+
+        # database entry confirmation message
+        self.db_message = QLabel("")
+        self.top_container.addWidget(self.db_message)
 
         # create instance of serial monitor
         self.serial_monitor = SerialPortMonitor()
@@ -265,6 +270,7 @@ class SerialDynamicPlotter(QMainWindow):
         experiment_name = self.exp_input.text()
         cartridge_number = self.sample_input.text()
         message = db.store_measurements(experiment_name, cartridge_number, measurements)
+        self.db_message.setText(message)
         self.export_data()
         
     def export_data(self):

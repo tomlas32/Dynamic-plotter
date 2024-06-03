@@ -10,7 +10,7 @@ collection = db[credentials.COLLECTION_NAME]
 
 # function for saving data into databse
 def store_measurements(experiment_name, cartridge_number, measurements):
-    test_date = datetime.now(datetime.timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d")
+    test_date = datetime.now().strftime("%Y-%m-%d")
 
     record = {
         "test_date": test_date,
