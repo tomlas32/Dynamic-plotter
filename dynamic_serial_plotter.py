@@ -158,7 +158,7 @@ class SerialDynamicPlotter(QMainWindow):
 
         self.export_button = QPushButton("Export")
         self.buttons_layout.addWidget(self.export_button)
-        self.export_button.clicked.connect(self.export_data)
+        self.export_button.clicked.connect(self.export_helper)
 
         # add to main layout
         self.main_layout.addWidget(self.left_panel)                                                  
@@ -259,7 +259,14 @@ class SerialDynamicPlotter(QMainWindow):
                 self.LCD_display.display(formatted_value)
             except(UnicodeDecodeError, IndexError, ValueError):
                 pass
-    
+    # define a helper function for exporting data and saving it into database
+    def export_helper(self):
+        measurements = self.data_records
+        experiment_name = self.exp_input.text()
+        cartridge_number = self.sample_input.text()
+        message = db.store_measurements(experiment_name, cartridge_number, measurements)
+        self.export_data()
+        
     def export_data(self):
         if len(self.data_records) > 0:
             filename, _ = QFileDialog.getSaveFileName(self, "Export Data", "", "CSV Files (*.csv)")

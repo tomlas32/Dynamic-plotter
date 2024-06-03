@@ -9,10 +9,8 @@ collection = db[credentials.COLLECTION_NAME]
 
 
 # function for saving data into databse
-def store_measurements(self, measurements):
+def store_measurements(experiment_name, cartridge_number, measurements):
     test_date = datetime.now(datetime.timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d")
-    experiment_name = self.exp_input.text()
-    cartridge_number = self.sample_input.text()
 
     record = {
         "test_date": test_date,
@@ -21,3 +19,6 @@ def store_measurements(self, measurements):
         "measurements": measurements,
     }
     result = collection.insert_one(record)
+    confirmation_msg = f"Session data inserted with ID: {result.inserted_id}"
+
+    return confirmation_msg
