@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QSizePolicy, QSpacerItem
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 import time
+import database as db
 
 
 #define buffer - using circular approach
@@ -275,6 +276,7 @@ class SerialDynamicPlotter(QMainWindow):
                 QMessageBox.warning(self, "Export error", "Invalid file name.")
         else:
             QMessageBox.warning(self, "Export error", "No data to export.")
+    
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)                                                            # creates instance of QApplication
