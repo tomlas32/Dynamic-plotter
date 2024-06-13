@@ -102,6 +102,8 @@ class SerialDynamicPlotter(QMainWindow):
         # initilize right panel layouts for storing widgets
         self.exp_layout = QHBoxLayout()
         self.sample_layout = QHBoxLayout()
+        self.user_input_layout = QHBoxLayout()
+        self.instrument_layout = QHBoxLayout()
         self.buttons_layout = QHBoxLayout()
         self.LCD_layout = QVBoxLayout()
         self.COM_layout = QVBoxLayout()
@@ -116,7 +118,9 @@ class SerialDynamicPlotter(QMainWindow):
         # add to right panel layouts
         self.top_container.addLayout(self.LCD_layout)
         self.top_container.addSpacerItem(spacer_1)
+        self.top_container.addLayout(self.user_input_layout)
         self.top_container.addLayout(self.exp_layout)
+        self.top_container.addLayout(self.instrument_layout)
         self.top_container.addLayout(self.sample_layout)
         self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
@@ -133,12 +137,26 @@ class SerialDynamicPlotter(QMainWindow):
         self.LCD_display.setDigitCount(8)
         self.LCD_layout.addWidget(self.LCD_display)
 
+        # user label and input field
+        self.user_input_layout.addWidget(QLabel("User ID"))
+        self.user_input = QLineEdit()
+        self.user_input.setFixedWidth(200)
+        self.user_input_layout.addWidget(self.user_input)
+        self.user_input.textChanged.connect(self.check_condition)
+
         # experiment label and input field
         self.exp_layout.addWidget(QLabel("Experiment Name"))
         self.exp_input = QLineEdit()
         self.exp_input.setFixedWidth(200)
         self.exp_layout.addWidget(self.exp_input)
         self.exp_input.textChanged.connect(self.check_condition)
+
+        # instrument label and input field
+        self.instrument_layout.addWidget(QLabel("Instrument ID"))
+        self.instrument_input = QLineEdit()
+        self.instrument_input.setFixedWidth(200)
+        self.instrument_layout.addWidget(self.instrument_input)
+        self.instrument_input.textChanged.connect(self.check_condition)
 
         # sample rate label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
@@ -191,8 +209,10 @@ class SerialDynamicPlotter(QMainWindow):
     def check_condition(self):
         exp_name = self.exp_input.text()
         comport_index = self.com_port_combo.currentText()
+        user_name = self.user_input.text()
+        instrument_id = self.instrument_input.text()
 
-        if len(exp_name.strip()) and len(comport_index) > 0:
+        if all(len(x.strip()) > 0 for x in [exp_name, comport_index, user_name, instrument_id]):
             self.connect_button.setEnabled(True)
         else:
             self.connect_button.setEnabled(False)
@@ -269,7 +289,10 @@ class SerialDynamicPlotter(QMainWindow):
         measurements = self.data_records
         experiment_name = self.exp_input.text()
         cartridge_number = self.sample_input.text()
-        message = db.store_measurements(experiment_name, cartridge_number, measurements)
+        user_id = self.user_input.text()
+        instrument_id = self.instrument_input.text()
+        
+        message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, measurements)
         self.db_message.setText(message)
         self.export_data()
         
