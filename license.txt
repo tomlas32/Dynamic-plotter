@@ -1,0 +1,43 @@
+END-USER LICENSE AGREEMENT (EULA)
+
+This End-User License Agreement ("EULA") is a legal agreement between you (either an individual or a single entity) and Tomasz Lasota ("Licensor") for the software product identified above ("Software").
+
+By installing, copying, or otherwise using the Software, you agree to be bound by the terms of this EULA. If you do not agree to the terms of this EULA, do not install or use the Software.
+
+1. Grant of License:
+
+Licensor grants you a non-exclusive, non-transferable, revocable license to use the Software for your personal or internal business purposes only.
+
+2. Restrictions:
+
+You shall not:
+
+Modify, adapt, translate, reverse engineer, decompile, disassemble, or create derivative works based on the Software.
+Rent, lease, sublicense, distribute, or otherwise transfer the Software to any third party.
+Remove or alter any proprietary notices, labels, or marks on the Software.
+
+3. Intellectual Property:
+
+The Software is protected by copyright laws and international copyright treaties, as well as other intellectual property laws and treaties. The Software is licensed, not sold.
+
+4. Disclaimer of Warranty:
+
+The Software is provided "AS IS" without warranty of any kind, either express or implied, including, but not limited to, the implied warranties of merchantability and fitness for a particular purpose. Licensor does not warrant that the Software will meet your requirements or that operation of the Software will be uninterrupted or error-free.
+
+5. Limitation of Liability:
+
+In no event shall Licensor be liable for any direct, indirect, incidental, special, exemplary, or consequential damages (including, but not limited to, procurement of substitute goods or services; loss of use, data, or profits; or business interruption) however caused and on any theory of liability, whether in contract, strict liability, or tort (including negligence or otherwise) arising in any way out of the use of this software, even if advised of the possibility of such damage.
+
+6. Termination:
+
+This EULA is effective from the date you first use the Software and shall continue until terminated. You may terminate this EULA at any time by uninstalling the Software and destroying all copies in your possession. Licensor may terminate this EULA at any time if you fail to comply with any term of this EULA. Upon termination, you must destroy all copies of the Software in your possession.
+
+7. Governing Law:
+
+This EULA shall be governed by and construed in accordance with the laws of [Your Jurisdiction].
+
+8. Entire Agreement:
+
+This EULA constitutes the entire agreement between you and Licensor regarding the Software and supersedes all prior or contemporaneous understandings, agreements, representations, or warranties, whether written or oral.
+
+Please note: This is just a template. It's strongly recommended that you consult with a legal professional to ensure the license is appropriate for your specific needs and jurisdiction.
