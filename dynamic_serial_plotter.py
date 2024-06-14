@@ -72,7 +72,7 @@ class SerialDynamicPlotter(QMainWindow):
 
 
         ########## define GUI window dimentions characteristics #########################
-        self.setWindowTitle("Serial Port Dynamic Viewer")
+        self.setWindowTitle("Dynamic Viewer")
         self.setFixedSize(1024, 500)
 
         ########## define plot area widget characteristics ##############################
@@ -320,11 +320,5 @@ if __name__ == "__main__":
     viewer_window.add_sensor("P", "r")
     viewer_window.show()
     sys.exit(application.exec_())
-    # if viewer_window.serial_port.open(QSerialPort.ReadOnly):                                      # set to Read-only from sensors
-    #     viewer_window.show()
-    #     sys.exit(application.exec_())
-    # else:
-    #     QMessageBox.warning(viewer_window, "Error", "Failed to establish serial port connection")
-    #     sys.exit(1)
 
 
