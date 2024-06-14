@@ -195,6 +195,13 @@ class SerialDynamicPlotter(QMainWindow):
         self.db_message = QLabel("")
         self.top_container.addWidget(self.db_message)
 
+        # create a message box for clearing current data display
+        self.clear_data_display = QMessageBox()
+        self.clear_data_display.setWindowTitle("Choose Option")
+        self.clear_data_display.setText("Would you like to reset the viewer and clear the data?")
+        self.clear_data_display.setIcon(QMessageBox.Question)
+        self.clear_data_display.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+
         # create instance of serial monitor
         self.serial_monitor = SerialPortMonitor()
         self.serial_monitor.port_changed.connect(self.update_com_port_combo)
@@ -295,6 +302,11 @@ class SerialDynamicPlotter(QMainWindow):
         message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, measurements)
         self.db_message.setText(message)
         self.export_data()
+        reply = self.clear_data_display.exec_()
+        if reply == QMessageBox.Yes:
+            self.clear_data()
+        elif reply == QMessageBox.No:
+            QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
         
     def export_data(self):
         if len(self.data_records) > 0:
@@ -313,6 +325,14 @@ class SerialDynamicPlotter(QMainWindow):
         else:
             QMessageBox.warning(self, "Export error", "No data to export.")
     
+    # function for clearing data and viewer output
+    def clear_data(self):
+        self.data_records = []
+        self.LCD_display.display(0)
+        self.sensor_data = {}
+        self.plot_widget.clear()
+        self.connect_button.setText("Connect")
+        self.status_label.setText("")
 
 if __name__ == "__main__":
     application = QApplication(sys.argv)                                                            # creates instance of QApplication
