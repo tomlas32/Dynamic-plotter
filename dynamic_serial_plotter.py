@@ -3,7 +3,7 @@ import numpy as np
 import pyqtgraph as pgt
 from PyQt5.QtCore import QTimer, QObject, pyqtSignal, Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
-from PyQt5.QtWidgets import QSizePolicy, QSpacerItem
+from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit
 from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
 import csv
 import time
@@ -104,6 +104,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.sample_layout = QHBoxLayout()
         self.user_input_layout = QHBoxLayout()
         self.instrument_layout = QHBoxLayout()
+        self.notes_layout = QHBoxLayout()
         self.buttons_layout = QHBoxLayout()
         self.LCD_layout = QVBoxLayout()
         self.COM_layout = QVBoxLayout()
@@ -122,6 +123,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.top_container.addLayout(self.exp_layout)
         self.top_container.addLayout(self.instrument_layout)
         self.top_container.addLayout(self.sample_layout)
+        self.top_container.addLayout(self.notes_layout)
         self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
         self.top_container.addLayout(self.buttons_layout)
@@ -158,11 +160,19 @@ class SerialDynamicPlotter(QMainWindow):
         self.instrument_layout.addWidget(self.instrument_input)
         self.instrument_input.textChanged.connect(self.check_condition)
 
-        # sample rate label and input field
+        # sample label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
         self.sample_input = QLineEdit()
         self.sample_input.setFixedWidth(200)
         self.sample_layout.addWidget(self.sample_input)
+
+        # notes label and input
+        self.notes_layout.addWidget(QLabel("Notes"))
+        self.notes_input = QTextEdit()
+        self.notes_input.setFixedWidth(200)
+        self.notes_input.setFixedHeight(100)
+        self.notes_input.setLineWrapMode(QTextEdit.WidgetWidth)
+        self.notes_layout.addWidget(self.notes_input)
 
         # created COM label and dropdown field and add to layout
         self.com_port_combo = QComboBox()
@@ -298,8 +308,9 @@ class SerialDynamicPlotter(QMainWindow):
         cartridge_number = self.sample_input.text()
         user_id = self.user_input.text()
         instrument_id = self.instrument_input.text()
+        notes = self.notes_input.toPlainText()
         
-        message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, measurements)
+        message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, measurements, notes)
         self.db_message.setText(message)
         self.export_data()
         reply = self.clear_data_display.exec_()
