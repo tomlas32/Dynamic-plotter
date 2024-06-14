@@ -4,3 +4,9 @@
 /venv_gui
 /credentials.py
 /__pycache__
+/build
+/dist
+/*.spec
+/*.exe
+/*.ico
+
