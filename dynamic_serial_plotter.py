@@ -15,7 +15,6 @@ class CircularBuffer:
     # constructor for circular buffer
     def __init__(self, max_size):
         self.max_size = max_size
-        #self.buffer = np.zeros(max_size)
         self.buffer = np.empty(max_size, dtype=object)
         self.index = 0
         self.full = False
@@ -41,11 +40,6 @@ class CircularBuffer:
         self.index = (self.index + 1) % self.max_size
         if self.index == 0:
             self.full = True
-        # self.buffer[self.index] = value                                                             # assigns pushed value to the current index element in the numpy list
-        # self.index = (self.index + 1) % self.max_size                                               # increment index and checks if buffer was filled 
-        # if self.index == 0:
-        #     self.full = True  
-
 
 # class related to monitoring Serial Port activity 
 class SerialPortMonitor(QObject):
