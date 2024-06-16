@@ -15,7 +15,8 @@ class CircularBuffer:
     # constructor for circular buffer
     def __init__(self, max_size):
         self.max_size = max_size
-        self.buffer = np.zeros(max_size)
+        #self.buffer = np.zeros(max_size)
+        self.buffer = np.empty(max_size, dtype=object)
         self.index = 0
         self.full = False
 
@@ -25,13 +26,25 @@ class CircularBuffer:
             return np.concatenate((self.buffer[self.index:], self.buffer[:self.index]))
         else:
             return self.buffer[:self.index]
+    
+    def get_data_for_plot(self):
+        data = self.get_data()
+        if data.size > 0:
+            timestamp, values = zip(*data)
+            return np.array(timestamp, dtype=np.float64), np.array(values, dtype=np.float64)
+        else:
+            return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
 
     # push function for adding data to the buffer
-    def push(self, value):
-        self.buffer[self.index] = value                                                             # assigns pushed value to the current index element in the numpy list
-        self.index = (self.index + 1) % self.max_size                                               # increment index and checks if buffer was filled 
+    def push(self, item):
+        self.buffer[self.index] = item
+        self.index = (self.index + 1) % self.max_size
         if self.index == 0:
-            self.full = True  
+            self.full = True
+        # self.buffer[self.index] = value                                                             # assigns pushed value to the current index element in the numpy list
+        # self.index = (self.index + 1) % self.max_size                                               # increment index and checks if buffer was filled 
+        # if self.index == 0:
+        #     self.full = True  
 
 
 # class related to monitoring Serial Port activity 
@@ -79,7 +92,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.plot_widget = pgt.PlotWidget()
         self.plot_widget.setBackground("#000000")
         self.plot_widget.setLabel("left", "Value")
-        self.plot_widget.setLabel("bottom", "Time")
+        self.plot_widget.setLabel("bottom", "Time (s)")
         self.plot_widget.showGrid(True, True)
         self.plot_widget.setMouseEnabled(x=True, y=False)
         self.plot_widget.setClipToView(True)
@@ -293,9 +306,11 @@ class SerialDynamicPlotter(QMainWindow):
                 formatted_value = "{:.2f}".format(sensor_value)
                 if sensor_name in self.sensor_data and self.is_connected and not self.is_paused:
                     data_buffer = self.sensor_data[sensor_name]['buffer']
-                    data_buffer.push(formatted_value)
-                    self.sensor_data[sensor_name]['plot_data'].setData(data_buffer.get_data())
                     timestamp = format(float(time.time() - self.start_time), ".2f")
+                    data_buffer.push((timestamp, formatted_value))
+                    x_data, y_data = data_buffer.get_data_for_plot()
+                    self.sensor_data[sensor_name]['plot_data'].setData(x_data, y_data)
+                                        
                     self.data_records.append([sensor_name, timestamp, formatted_value])
                     time.sleep(0.01)
                 self.LCD_display.display(formatted_value)
@@ -309,8 +324,9 @@ class SerialDynamicPlotter(QMainWindow):
         user_id = self.user_input.text()
         instrument_id = self.instrument_input.text()
         notes = self.notes_input.toPlainText()
+        test_duration = measurements[-1][1]
         
-        message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, measurements, notes)
+        message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
         self.db_message.setText(message)
         self.export_data()
         reply = self.clear_data_display.exec_()
