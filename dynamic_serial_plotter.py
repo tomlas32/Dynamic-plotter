@@ -1,68 +1,13 @@
-import sys
-import numpy as np
 import pyqtgraph as pgt
-from PyQt5.QtCore import QTimer, QObject, pyqtSignal, Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
-from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit
-from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
+from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QMenu, QAction
+from PyQt5.QtSerialPort import QSerialPort
+from buffer import CircularBuffer
 import csv
 import time
 import database as db
-
-
-#define buffer - using circular approach
-class CircularBuffer:
-    # constructor for circular buffer
-    def __init__(self, max_size):
-        self.max_size = max_size
-        self.buffer = np.empty(max_size, dtype=object)
-        self.index = 0
-        self.full = False
-
-    # get function for fetching data from the buffer
-    def get_data(self):
-        if self.full:
-            return np.concatenate((self.buffer[self.index:], self.buffer[:self.index]))
-        else:
-            return self.buffer[:self.index]
-    
-    def get_data_for_plot(self):
-        data = self.get_data()
-        if data.size > 0:
-            timestamp, values = zip(*data)
-            return np.array(timestamp, dtype=np.float64), np.array(values, dtype=np.float64)
-        else:
-            return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
-
-    # push function for adding data to the buffer
-    def push(self, item):
-        self.buffer[self.index] = item
-        self.index = (self.index + 1) % self.max_size
-        if self.index == 0:
-            self.full = True
-
-# class related to monitoring Serial Port activity 
-class SerialPortMonitor(QObject):
-    port_changed = pyqtSignal()
-
-    def __init__(self):
-        super().__init__()
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.check_ports)
-        self.timer.start(1000)                                                                      # checks current ports every 3 seconds
-
-        self.current_ports = []                                                                     # list for storing currently available ports
-    
-    # function for checking currently available ports
-    def check_ports(self):
-        available_ports = self.get_ports()
-        if available_ports != self.current_ports:
-            self.current_ports = available_ports
-            self.port_changed.emit()
-    
-    # function for fetching currently available ports
-    def get_ports(self):
-        return [port.portName() for port in QSerialPortInfo().availablePorts()]
+from SerialMonitor import SerialPortMonitor
 
 
 class SerialDynamicPlotter(QMainWindow):
@@ -77,10 +22,29 @@ class SerialDynamicPlotter(QMainWindow):
         self.is_connected = False
         self.is_paused = False
 
+        ########## FIle menu #########
+        self.menubar = self.menuBar() 
+        self.file_menu = self.menubar.addMenu("File")
+        self.settings_menu = self.menubar.addMenu("Settings")
+        self.help_menu = self.menubar.addMenu("Help")
+        
+        # Connection submenu
+        connect_action = QAction("Connect", self)
+        #connect_action.triggered.connect(self.toggle_connect)
+        disconnect_action = QAction("Disconnect", self)
+        clear_action = QAction("Clear", self)
+        clear_action.triggered.connect(self.clear_data)
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.exit_application)
+        self.file_menu.addAction(connect_action)
+        self.file_menu.addAction(disconnect_action)
+        self.file_menu.addAction(clear_action)
+        self.file_menu.addAction(exit_action)
+        
 
         ########## define GUI window dimentions characteristics #########################
         self.setWindowTitle("Dynamic Viewer")
-        self.setFixedSize(1024, 500)
+        self.setFixedSize(1024, 520)
 
         ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
@@ -354,12 +318,9 @@ class SerialDynamicPlotter(QMainWindow):
         self.plot_widget.clear()
         self.connect_button.setText("Connect")
         self.status_label.setText("")
+    
+    def exit_application(self):
+        QApplication.quit() 
 
-if __name__ == "__main__":
-    application = QApplication(sys.argv)                                                            # creates instance of QApplication
-    viewer_window = SerialDynamicPlotter()
-    viewer_window.add_sensor("P", "r")
-    viewer_window.show()
-    sys.exit(application.exec_())
 
 
