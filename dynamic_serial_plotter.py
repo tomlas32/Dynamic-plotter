@@ -250,16 +250,24 @@ class SerialDynamicPlotter(QMainWindow):
             self.serial_port.close()  # Close the port when pausing
             self.connect_button.setText("Resume")
 
-    # function for establishing serial communication
+    # function for establishing serial communication 
     def port_connect(self):
         self.is_paused = False
         self.is_connected = True
-        self.start_time = time.time()
+        # if the pause button was clicked we are going to use the previously recorded time
+        if hasattr(self, 'pause_time'):
+            self.start_time += time.time() - self.pause_time 
+            del self.pause_time   # Reset pause_time after resuming
+        # Start from scratch if it's the first time connecting    
+        else:  
+            self.start_time = time.time()
     
     # function for pausing data stream and plotting
     def port_pause(self):
         self.is_paused = True
         self.is_connected = True
+        # Record the time when the pause happens
+        self.pause_time = time.time()
 
     # function to receive serial data
     def receive_data(self):
