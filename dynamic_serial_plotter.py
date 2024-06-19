@@ -16,7 +16,7 @@ class SerialDynamicPlotter(QMainWindow):
         super().__init__()                                                                          # inherit from superclass (QMainWindow)
 
 
-        icon = QIcon(".\sensor.ico") 
+        icon = QIcon("D:\Projects\Work projects\Dynamic-plotter\sensor.ico") 
         self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
