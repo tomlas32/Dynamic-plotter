@@ -3,6 +3,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
 from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QMenu, QAction
 from PyQt5.QtSerialPort import QSerialPort
+from PyQt5.QtGui import QIcon
 from buffer import CircularBuffer
 import csv
 import time
@@ -14,6 +15,9 @@ class SerialDynamicPlotter(QMainWindow):
     def __init__(self):
         super().__init__()                                                                          # inherit from superclass (QMainWindow)
 
+
+        icon = QIcon("./pressure.ico") 
+        self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
         self.com_port_names = []                                                                    # list for storing active COM ports
