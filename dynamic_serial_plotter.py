@@ -1,7 +1,7 @@
 import pyqtgraph as pgt
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
-from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QMenu, QAction
+from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QAction
 from PyQt5.QtSerialPort import QSerialPort
 from PyQt5.QtGui import QIcon
 from buffer import CircularBuffer
