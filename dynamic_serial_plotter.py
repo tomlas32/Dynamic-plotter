@@ -29,16 +29,20 @@ class SerialDynamicPlotter(QMainWindow):
         self.help_menu = self.menubar.addMenu("Help")
         
         # Connection submenu
-        connect_action = QAction("Connect", self)
-        #connect_action.triggered.connect(self.toggle_connect)
-        disconnect_action = QAction("Disconnect", self)
-        clear_action = QAction("Clear", self)
-        clear_action.triggered.connect(self.clear_data)
+        self.connect_action = QAction("Connect", self)
+        self.connect_action.triggered.connect(self.toggle_connect)
+        self.connect_action.setEnabled(False)
+        self.disconnect_action = QAction("Disconnect", self)
+        self.disconnect_action.setEnabled(False)
+        self.disconnect_action
+        self.clear_action = QAction("Clear", self)
+        self.clear_action.triggered.connect(self.clear_data)
+        self.clear_action.setEnabled(False)
         exit_action = QAction("Exit", self)
         exit_action.triggered.connect(self.exit_application)
-        self.file_menu.addAction(connect_action)
-        self.file_menu.addAction(disconnect_action)
-        self.file_menu.addAction(clear_action)
+        self.file_menu.addAction(self.connect_action)
+        self.file_menu.addAction(self.disconnect_action)
+        self.file_menu.addAction(self.clear_action)
         self.file_menu.addAction(exit_action)
         
 
@@ -202,8 +206,10 @@ class SerialDynamicPlotter(QMainWindow):
 
         if all(len(x.strip()) > 0 for x in [exp_name, comport_index, user_name, instrument_id]):
             self.connect_button.setEnabled(True)
+            self.connect_action.setEnabled(True)
         else:
             self.connect_button.setEnabled(False)
+            self.connect_action.setEnabled(False)
                
 
     def update_com_port_combo(self):
@@ -233,6 +239,8 @@ class SerialDynamicPlotter(QMainWindow):
                     self.port_connect()
                     self.connect_button.setText("Pause")
                     self.status_label.setText("Connected to " + port_name)
+                    self.connect_action.setEnabled(False)
+                    self.update_clear_action_state()
                 else:
                     self.status_label.setText("Failed to connect to COM port")
             else:
@@ -290,7 +298,9 @@ class SerialDynamicPlotter(QMainWindow):
         reply = self.clear_data_display.exec_()
         if reply == QMessageBox.Yes:
             self.clear_data()
+            self.update_clear_action_state()
         elif reply == QMessageBox.No:
+            self.update_clear_action_state()
             QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
         
     def export_data(self):
@@ -314,13 +324,21 @@ class SerialDynamicPlotter(QMainWindow):
     def clear_data(self):
         self.data_records = []
         self.LCD_display.display(0)
+        for sensor_name in self.sensor_data:
+            self.plot_widget.removeItem(self.sensor_data[sensor_name]["plot_data"])
         self.sensor_data = {}
-        self.plot_widget.clear()
+        self.add_sensor("P", "r")
         self.connect_button.setText("Connect")
         self.status_label.setText("")
+        self.update_clear_action_state()
     
     def exit_application(self):
         QApplication.quit() 
 
-
+    # function for checking if data was collected
+    def update_clear_action_state(self):
+        if self.data_records or self.sensor_data: 
+            self.clear_action.setEnabled(True)   
+        else:
+            self.clear_action.setEnabled(False) 
 
