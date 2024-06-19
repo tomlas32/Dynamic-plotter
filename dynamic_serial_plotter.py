@@ -1,74 +1,23 @@
-import sys
-import numpy as np
 import pyqtgraph as pgt
-from PyQt5.QtCore import QTimer, QObject, pyqtSignal, Qt
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
-from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit
-from PyQt5.QtSerialPort import QSerialPort, QSerialPortInfo
+from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QMenu, QAction
+from PyQt5.QtSerialPort import QSerialPort
+from PyQt5.QtGui import QIcon
+from buffer import CircularBuffer
 import csv
 import time
 import database as db
-
-
-#define buffer - using circular approach
-class CircularBuffer:
-    # constructor for circular buffer
-    def __init__(self, max_size):
-        self.max_size = max_size
-        self.buffer = np.empty(max_size, dtype=object)
-        self.index = 0
-        self.full = False
-
-    # get function for fetching data from the buffer
-    def get_data(self):
-        if self.full:
-            return np.concatenate((self.buffer[self.index:], self.buffer[:self.index]))
-        else:
-            return self.buffer[:self.index]
-    
-    def get_data_for_plot(self):
-        data = self.get_data()
-        if data.size > 0:
-            timestamp, values = zip(*data)
-            return np.array(timestamp, dtype=np.float64), np.array(values, dtype=np.float64)
-        else:
-            return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
-
-    # push function for adding data to the buffer
-    def push(self, item):
-        self.buffer[self.index] = item
-        self.index = (self.index + 1) % self.max_size
-        if self.index == 0:
-            self.full = True
-
-# class related to monitoring Serial Port activity 
-class SerialPortMonitor(QObject):
-    port_changed = pyqtSignal()
-
-    def __init__(self):
-        super().__init__()
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.check_ports)
-        self.timer.start(1000)                                                                      # checks current ports every 3 seconds
-
-        self.current_ports = []                                                                     # list for storing currently available ports
-    
-    # function for checking currently available ports
-    def check_ports(self):
-        available_ports = self.get_ports()
-        if available_ports != self.current_ports:
-            self.current_ports = available_ports
-            self.port_changed.emit()
-    
-    # function for fetching currently available ports
-    def get_ports(self):
-        return [port.portName() for port in QSerialPortInfo().availablePorts()]
+from SerialMonitor import SerialPortMonitor
 
 
 class SerialDynamicPlotter(QMainWindow):
     def __init__(self):
         super().__init__()                                                                          # inherit from superclass (QMainWindow)
 
+
+        icon = QIcon("pressure.ico") 
+        self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
         self.com_port_names = []                                                                    # list for storing active COM ports
@@ -77,10 +26,33 @@ class SerialDynamicPlotter(QMainWindow):
         self.is_connected = False
         self.is_paused = False
 
+        ########## FIle menu #########
+        self.menubar = self.menuBar() 
+        self.file_menu = self.menubar.addMenu("File")
+        self.settings_menu = self.menubar.addMenu("Settings")
+        self.help_menu = self.menubar.addMenu("Help")
+        
+        # Connection submenu
+        self.connect_action = QAction("Connect", self)
+        self.connect_action.triggered.connect(self.toggle_connect)
+        self.connect_action.setEnabled(False)
+        self.disconnect_action = QAction("Disconnect", self)
+        self.disconnect_action.setEnabled(False)
+        self.disconnect_action
+        self.clear_action = QAction("Clear", self)
+        self.clear_action.triggered.connect(self.clear_data)
+        self.clear_action.setEnabled(False)
+        exit_action = QAction("Exit", self)
+        exit_action.triggered.connect(self.exit_application)
+        self.file_menu.addAction(self.connect_action)
+        self.file_menu.addAction(self.disconnect_action)
+        self.file_menu.addAction(self.clear_action)
+        self.file_menu.addAction(exit_action)
+        
 
         ########## define GUI window dimentions characteristics #########################
         self.setWindowTitle("Dynamic Viewer")
-        self.setFixedSize(1024, 500)
+        self.setFixedSize(1024, 520)
 
         ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
@@ -238,8 +210,10 @@ class SerialDynamicPlotter(QMainWindow):
 
         if all(len(x.strip()) > 0 for x in [exp_name, comport_index, user_name, instrument_id]):
             self.connect_button.setEnabled(True)
+            self.connect_action.setEnabled(True)
         else:
             self.connect_button.setEnabled(False)
+            self.connect_action.setEnabled(False)
                
 
     def update_com_port_combo(self):
@@ -269,6 +243,8 @@ class SerialDynamicPlotter(QMainWindow):
                     self.port_connect()
                     self.connect_button.setText("Pause")
                     self.status_label.setText("Connected to " + port_name)
+                    self.connect_action.setEnabled(False)
+                    self.update_clear_action_state()
                 else:
                     self.status_label.setText("Failed to connect to COM port")
             else:
@@ -278,16 +254,24 @@ class SerialDynamicPlotter(QMainWindow):
             self.serial_port.close()  # Close the port when pausing
             self.connect_button.setText("Resume")
 
-    # function for establishing serial communication
+    # function for establishing serial communication 
     def port_connect(self):
         self.is_paused = False
         self.is_connected = True
-        self.start_time = time.time()
+        # if the pause button was clicked we are going to use the previously recorded time
+        if hasattr(self, 'pause_time'):
+            self.start_time += time.time() - self.pause_time 
+            del self.pause_time   # Reset pause_time after resuming
+        # Start from scratch if it's the first time connecting    
+        else:  
+            self.start_time = time.time()
     
     # function for pausing data stream and plotting
     def port_pause(self):
         self.is_paused = True
         self.is_connected = True
+        # Record the time when the pause happens
+        self.pause_time = time.time()
 
     # function to receive serial data
     def receive_data(self):
@@ -326,7 +310,9 @@ class SerialDynamicPlotter(QMainWindow):
         reply = self.clear_data_display.exec_()
         if reply == QMessageBox.Yes:
             self.clear_data()
+            self.update_clear_action_state()
         elif reply == QMessageBox.No:
+            self.update_clear_action_state()
             QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
         
     def export_data(self):
@@ -350,16 +336,21 @@ class SerialDynamicPlotter(QMainWindow):
     def clear_data(self):
         self.data_records = []
         self.LCD_display.display(0)
+        for sensor_name in self.sensor_data:
+            self.plot_widget.removeItem(self.sensor_data[sensor_name]["plot_data"])
         self.sensor_data = {}
-        self.plot_widget.clear()
+        self.add_sensor("P", "r")
         self.connect_button.setText("Connect")
         self.status_label.setText("")
+        self.update_clear_action_state()
+    
+    def exit_application(self):
+        QApplication.quit() 
 
-if __name__ == "__main__":
-    application = QApplication(sys.argv)                                                            # creates instance of QApplication
-    viewer_window = SerialDynamicPlotter()
-    viewer_window.add_sensor("P", "r")
-    viewer_window.show()
-    sys.exit(application.exec_())
-
+    # function for checking if data was collected
+    def update_clear_action_state(self):
+        if self.data_records or self.sensor_data: 
+            self.clear_action.setEnabled(True)   
+        else:
+            self.clear_action.setEnabled(False) 
 
