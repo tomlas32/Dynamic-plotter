@@ -16,7 +16,7 @@ class SerialDynamicPlotter(QMainWindow):
         super().__init__()                                                                          # inherit from superclass (QMainWindow)
 
 
-        icon = QIcon("./pressure.ico") 
+        icon = QIcon("pressure.ico") 
         self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
