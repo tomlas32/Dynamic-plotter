@@ -21,7 +21,7 @@ def store_measurements(user_id, experiment_name, instrument_id, cartridge_number
         "experiment_name": experiment_name,
         "cartridge_number": cartridge_number,
         "test_duration": test_duration,
-        "measurements": measurements,
+        "pressure_measurements": measurements,
         "notes": notes
     }
     result = collection.insert_one(record)
