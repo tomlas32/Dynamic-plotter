@@ -9,7 +9,7 @@ collection = db[credentials.COLLECTION_NAME]
 
 
 # function for saving data into databse
-def store_measurements(user_id, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes):
+def store_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes):
     test_date = datetime.now().strftime("%Y-%m-%d")
     test_time = datetime.now().strftime("%H:%M:%S")
 
@@ -17,6 +17,7 @@ def store_measurements(user_id, experiment_name, instrument_id, cartridge_number
         "test_date": test_date,
         "test_time": test_time,
         "user_id": user_id,
+        "sensor_type": sensor_type,
         "instrument_id": instrument_id,
         "experiment_name": experiment_name,
         "cartridge_number": cartridge_number,

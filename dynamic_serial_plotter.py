@@ -303,8 +303,9 @@ class SerialDynamicPlotter(QMainWindow):
         instrument_id = self.instrument_input.text()
         notes = self.notes_input.toPlainText()
         test_duration = measurements[-1][1]
+        sensor_type = measurements[0][0]
         
-        message = db.store_measurements(user_id, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
+        message = db.store_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
         self.db_message.setText(message)
         self.export_data()
         reply = self.clear_data_display.exec_()
