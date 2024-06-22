@@ -1,5 +1,5 @@
 import pyqtgraph as pgt
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
 from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QAction
 from PyQt5.QtSerialPort import QSerialPort
@@ -12,11 +12,13 @@ from SerialMonitor import SerialPortMonitor
 
 
 class SerialDynamicPlotter(QMainWindow):
-    def __init__(self):
-        super().__init__()                                                                          # inherit from superclass (QMainWindow)
+    def __init__(self, parent=None):
+        super().__init__(parent)                                                                          # inherit from superclass (QMainWindow)
+        self.main_window = parent
+        self.closed = pyqtSignal()
 
 
-        icon = QIcon("sensor.ico") 
+        icon = QIcon(".\\assets\\sensor.ico") 
         self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
@@ -201,6 +203,9 @@ class SerialDynamicPlotter(QMainWindow):
         self.serial_port.setBaudRate(9600)
         self.serial_port.readyRead.connect(self.receive_data)
 
+        # initilise sensor
+        self.add_sensor("P", "r")
+
     # function for checking if all condition for establishin connection are met
     def check_condition(self):
         exp_name = self.exp_input.text()
@@ -345,8 +350,17 @@ class SerialDynamicPlotter(QMainWindow):
         self.status_label.setText("")
         self.update_clear_action_state()
     
+
+    # overide closeEvent function
+    def closeEvent(self, event):
+        self.exit_application()
+
+    # handles window closures (needed for dealing with hanging references)
     def exit_application(self):
-        QApplication.quit() 
+        if hasattr(self.main_window, "pressure_window"):
+            delattr(self.main_window, "pressure_window")
+        self.main_window.pressure_button.setEnabled(True)
+        self.close() 
 
     # function for checking if data was collected
     def update_clear_action_state(self):
