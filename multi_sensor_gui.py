@@ -376,8 +376,17 @@ class MultiSensorPlotter(QMainWindow):
                 try:
                     with open(filename, "w", newline="") as file:
                         writer = csv.writer(file)
-                        writer.writerow(["Sensor", "Time", "Value"])
-                        writer.writerows(self.data_records)
+                        channels = list(self.data_records.keys())             # Get all channel names
+                        writer.writerow(["Time"] + channels)
+
+                        for i in range(len(self.data_records[channels[0]])):  # Iterate over timestamps in any channel
+                            timestamp = self.data_records[channels[0]][i][0]  # Extract timestamp directly
+                            row = [timestamp]
+
+                            for channel in channels:
+                                value = self.data_records[channel][i][1]      # Extract value directly
+                                row.append(value)                             # Append value for each channel for a given timestamp
+                            writer.writerow(row)                             # Write the row data into csv (timestamp and 4 channels data) per each timestamp iteration
                     QMessageBox.information(self, "Success", "Data successfully exported to " + filename)
                 except Exception as e:
                     QMessageBox.warning(self, "Error", "Failed to export data: " + str(e))
