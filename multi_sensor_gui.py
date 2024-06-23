@@ -9,24 +9,24 @@ import csv
 import time
 import database as db
 from SerialMonitor import SerialPortMonitor
+import sys
 
-
-class SerialDynamicPlotter(QMainWindow):
-    def __init__(self, parent=None):
-        super().__init__(parent)                                                                          # inherit from superclass (QMainWindow)
-        self.main_window = parent
+class MultiSensorPlotter(QMainWindow):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.window_main = parent
         self.closed = pyqtSignal()
 
-
-        icon = QIcon(".\\assets\\sensor.ico") 
+        icon = QIcon(".\\assets\\sensor.ico")
         self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
         self.com_port_names = []                                                                    # list for storing active COM ports
-        self.data_records = []                                                                      # list for storing sensor data for export
-        self.buffer_size = 7000
+        self.data_records = {}                                                                      # list for storing sensor data for export
+        self.buffer_size = 10000
         self.is_connected = False
         self.is_paused = False
+        self.first_time_point = None
 
         ########## FIle menu #########
         self.menubar = self.menuBar() 
@@ -36,30 +36,29 @@ class SerialDynamicPlotter(QMainWindow):
         
         # Connection submenu
         self.connect_action = QAction("Connect", self)
-        self.connect_action.triggered.connect(self.toggle_connect)
+        #self.connect_action.triggered.connect(self.toggle_connect)
         self.connect_action.setEnabled(False)
         self.disconnect_action = QAction("Disconnect", self)
         self.disconnect_action.setEnabled(False)
         self.disconnect_action
         self.clear_action = QAction("Clear", self)
-        self.clear_action.triggered.connect(self.clear_data)
+        #self.clear_action.triggered.connect(self.clear_data)
         self.clear_action.setEnabled(False)
         exit_action = QAction("Exit", self)
-        exit_action.triggered.connect(self.exit_application)
+        #exit_action.triggered.connect(self.exit_application)
         self.file_menu.addAction(self.connect_action)
         self.file_menu.addAction(self.disconnect_action)
         self.file_menu.addAction(self.clear_action)
         self.file_menu.addAction(exit_action)
-        
 
         ########## define GUI window dimentions characteristics #########################
-        self.setWindowTitle("Dynamic Pressure Viewer")
+        self.setWindowTitle("Dynamic Temerature Viewer")
         self.setFixedSize(1024, 520)
 
         ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
         self.plot_widget.setBackground("#000000")
-        self.plot_widget.setLabel("left", "Pressure (mbar)")
+        self.plot_widget.setLabel("left", "Temperature (Celsius)")
         self.plot_widget.setLabel("bottom", "Time (s)")
         self.plot_widget.showGrid(True, True)
         self.plot_widget.setMouseEnabled(x=True, y=False)
@@ -67,13 +66,13 @@ class SerialDynamicPlotter(QMainWindow):
 
         ########## build the viewer widgets #############################################
         self.main_layout = QHBoxLayout()                                                                 # main layout to store 2 VBoxes
-        self.window = QWidget()                                                                          # main window
+        self.window = QWidget() 
 
         # left panel Widgets
         self.left_layout = QVBoxLayout()                                                                
         self.left_panel = QWidget()                                                                    
         self.left_panel.setLayout(self.left_layout)
-        self.left_layout.addWidget(self.plot_widget)     
+        self.left_layout.addWidget(self.plot_widget)
 
         # right panel Widgets
         self.right_layout = QVBoxLayout()                                                                # layout for data entry
@@ -89,38 +88,63 @@ class SerialDynamicPlotter(QMainWindow):
         self.notes_layout = QHBoxLayout()
         self.buttons_layout = QHBoxLayout()
         self.LCD_layout = QVBoxLayout()
+        self.LCD_sublayout1 = QHBoxLayout()
+        self.LCD_sublayout2 = QHBoxLayout()
+        self.LCD_sublayout3 = QHBoxLayout()
         self.COM_layout = QVBoxLayout()
         self.top_container = QVBoxLayout()
         self.top_container_widget = QWidget()
         self.top_container_widget.setLayout(self.top_container)
 
-        # create spacers for adjusting layout positions
-        spacer_1 = QSpacerItem(300, 50, QSizePolicy.Fixed, QSizePolicy.Fixed)
-        spacer_2 = QSpacerItem(300, 50, QSizePolicy.Fixed, QSizePolicy.Fixed)
-
         # add to right panel layouts
         self.top_container.addLayout(self.LCD_layout)
-        self.top_container.addSpacerItem(spacer_1)
+        #self.top_container.addSpacerItem(spacer_1)
         self.top_container.addLayout(self.user_input_layout)
         self.top_container.addLayout(self.exp_layout)
         self.top_container.addLayout(self.sensor_layout)
         self.top_container.addLayout(self.instrument_layout)
         self.top_container.addLayout(self.sample_layout)
         self.top_container.addLayout(self.notes_layout)
-        self.top_container.addSpacerItem(spacer_2)
+        #self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
         self.top_container.addLayout(self.buttons_layout)
 
         self.right_layout.addWidget(self.top_container_widget, alignment=Qt.AlignTop)
-        
+
         # LCD widget and label
-        self.LCD_label = QLabel("Current Sensor Value (mbar)")
+        self.LCD_label = QLabel("Current Sensor Value (deg C)")
         self.LCD_layout.addWidget(self.LCD_label)
-        self.LCD_display = QLCDNumber()
-        self.LCD_display.setFixedHeight(80)
-        self.LCD_display.setFixedWidth(300)
-        self.LCD_display.setDigitCount(8)
-        self.LCD_layout.addWidget(self.LCD_display)
+        self.LCD_label_ch1 = QLabel("Ch1:")
+        self.LCD_label_ch2 = QLabel("Ch2:")
+        self.LCD_label_ch3 = QLabel("Ch3:")
+        self.LCD_label_ch4 = QLabel("Ch4:")
+        self.LCD_display1 = QLCDNumber()
+        self.LCD_display1.setFixedHeight(24)
+        self.LCD_display1.setFixedWidth(120)
+        self.LCD_display1.setDigitCount(8)
+        self.LCD_display2 = QLCDNumber()
+        self.LCD_display2.setFixedHeight(24)
+        self.LCD_display2.setFixedWidth(120)
+        self.LCD_display2.setDigitCount(8)
+        self.LCD_display3 = QLCDNumber()
+        self.LCD_display3.setFixedHeight(24)
+        self.LCD_display3.setFixedWidth(120)
+        self.LCD_display3.setDigitCount(8)
+        self.LCD_display4 = QLCDNumber()
+        self.LCD_display4.setFixedHeight(24)
+        self.LCD_display4.setFixedWidth(120)
+        self.LCD_display4.setDigitCount(8)
+        self.LCD_sublayout2.addWidget(self.LCD_label_ch1)
+        self.LCD_sublayout2.addWidget(self.LCD_display1)
+        self.LCD_sublayout2.addWidget(self.LCD_label_ch2)
+        self.LCD_sublayout2.addWidget(self.LCD_display2)
+        self.LCD_sublayout3.addWidget(self.LCD_label_ch3)
+        self.LCD_sublayout3.addWidget(self.LCD_display3)
+        self.LCD_sublayout3.addWidget(self.LCD_label_ch4)
+        self.LCD_sublayout3.addWidget(self.LCD_display4)
+        self.LCD_layout.addWidget(self.LCD_label)
+        self.LCD_layout.addLayout(self.LCD_sublayout2)
+        self.LCD_layout.addLayout(self.LCD_sublayout3)
 
         # user label and input field
         self.user_input_layout.addWidget(QLabel("User ID"))
@@ -186,7 +210,7 @@ class SerialDynamicPlotter(QMainWindow):
 
         # set main window layout
         self.window.setLayout(self.main_layout)
-        self.setCentralWidget(self.window)                                                               # set the main widget as the centre of the application gui    
+        self.setCentralWidget(self.window) 
 
         # create connect button for establishing serial communication
         self.status_label = QLabel("")                                                              # reporting on successful connection/disconnection
@@ -210,13 +234,16 @@ class SerialDynamicPlotter(QMainWindow):
         
         # initialize and configure a QSerialPort object for serial communication
         self.serial_port = QSerialPort()
-        self.serial_port.setBaudRate(9600)
+        self.serial_port.setBaudRate(115200)
         self.serial_port.readyRead.connect(self.receive_data)
 
         # initilise sensor
-        self.add_sensor("P", "r")
-
-    # function for checking if all condition for establishin connection are met
+        self.add_sensor("Ch1", "r")
+        self.add_sensor("Ch2", "g")
+        self.add_sensor("Ch3", "b")
+        self.add_sensor("Ch4", "y")
+    
+    # function for checking if all condition for establishing connection are met
     def check_condition(self):
         exp_name = self.exp_input.text()
         comport_index = self.com_port_combo.currentText()
@@ -231,7 +258,6 @@ class SerialDynamicPlotter(QMainWindow):
         else:
             self.connect_button.setEnabled(False)
             self.connect_action.setEnabled(False)
-               
 
     def update_com_port_combo(self):
         current_port = self.com_port_combo.currentText()
@@ -239,13 +265,13 @@ class SerialDynamicPlotter(QMainWindow):
         for port_name in self.serial_monitor.current_ports:
             self.com_port_combo.addItem(port_name)
         if current_port in self.serial_monitor.current_ports:
-            self.com_port_combo.setCurrentText(current_port)   
-    
+            self.com_port_combo.setCurrentText(current_port)  
+
     def add_sensor(self, name, color):
         self.sensor_data[name] = {
             'buffer': CircularBuffer(self.buffer_size),
             'plot_data': self.plot_widget.plot(pen=pgt.mkPen(color, width=2), name=name),
-        }
+        }   
 
     def change_com_port(self):
         self.serial_port.setPortName(self.com_port_combo.currentText())
@@ -275,15 +301,15 @@ class SerialDynamicPlotter(QMainWindow):
     def port_connect(self):
         self.is_paused = False
         self.is_connected = True
-
+        # if the pause button was clicked we are going to use the previously recorded time
         if hasattr(self, 'pause_time'):
-            # Check if data was cleared during pause
-            if not self.data_records:  # Empty list means cleared
-                self.start_time = time.time()  # Reset if cleared
+            if self.data_records == {}:
+                self.start_time = time.time()
             else:
-                self.start_time += time.time() - self.pause_time
-            del self.pause_time 
-        else:
+                self.start_time += time.time() - self.pause_time 
+            del self.pause_time   # Reset pause_time after resuming
+        # Start from scratch if it's the first time connecting    
+        else:  
             self.start_time = time.time()
     
     # function for pausing data stream and plotting
@@ -293,27 +319,33 @@ class SerialDynamicPlotter(QMainWindow):
         # Record the time when the pause happens
         self.pause_time = time.time()
 
-    # function to receive serial data
     def receive_data(self):
+        self.serial_port.flush()
         while self.serial_port.canReadLine():
             try:
-                data = self.serial_port.readLine().data().decode("utf-8").strip()
-                values = data.split(", ")
-                sensor_name = "P"
-                sensor_value = float(values[4].strip())
-                formatted_value = "{:.2f}".format(sensor_value)
-                if sensor_name in self.sensor_data and self.is_connected and not self.is_paused:
-                    data_buffer = self.sensor_data[sensor_name]['buffer']
+                values = [float(x) for x in self.serial_port.readLine().data().decode("utf-8", errors="ignore").strip().split(",")]
+                formatted_values = ["{:.2f}".format(v) for v in values]
+                if self.is_connected and not self.is_paused:
                     timestamp = format(float(time.time() - self.start_time), ".2f")
-                    data_buffer.push((timestamp, formatted_value))
-                    x_data, y_data = data_buffer.get_data_for_plot()
-                    self.sensor_data[sensor_name]['plot_data'].setData(x_data, y_data)
-                                        
-                    self.data_records.append([sensor_name, timestamp, formatted_value])
-                    time.sleep(0.01)
-                self.LCD_display.display(formatted_value)
+                    for channel, value in zip(["Ch1", "Ch2", "Ch3", "Ch4"], formatted_values):
+                        buf = self.sensor_data[channel]['buffer']                                                                   # Get the buffer directly from self.sensor_data
+                        plot = self.sensor_data[channel]['plot_data']
+                        buf.push((timestamp, value))                                                                                # Update buffer
+                        x_data, y_data = buf.get_data_for_plot()
+                        plot.setData(x_data, y_data)                                                                                # Update plot
+                        if channel not in self.data_records:
+                            self.data_records[channel] = []
+                        self.data_records[channel].append([timestamp, value])
+                    
+                self.LCD_display1.display(formatted_values[0])
+                self.LCD_display2.display(formatted_values[1])
+                self.LCD_display3.display(formatted_values[2])
+                self.LCD_display4.display(formatted_values[3])
+                time.sleep(0.01)
             except(UnicodeDecodeError, IndexError, ValueError):
                 pass
+
+
     # define a helper function for exporting data and saving it into database
     def export_helper(self):
         measurements = self.data_records
@@ -322,10 +354,10 @@ class SerialDynamicPlotter(QMainWindow):
         user_id = self.user_input.text()
         instrument_id = self.instrument_input.text()
         notes = self.notes_input.toPlainText()
-        test_duration = measurements[-1][1]
+        test_duration = measurements["Ch4"][-1][0]
         sensor_type = self.sensor_input.text()
         
-        message = db.store_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
+        message = db.store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
         self.db_message.setText(message)
         self.export_data()
         reply = self.clear_data_display.exec_()
@@ -335,7 +367,8 @@ class SerialDynamicPlotter(QMainWindow):
         elif reply == QMessageBox.No:
             self.update_clear_action_state()
             QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
-        
+
+
     def export_data(self):
         if len(self.data_records) > 0:
             filename, _ = QFileDialog.getSaveFileName(self, "Export Data", "", "CSV Files (*.csv)")
@@ -355,16 +388,22 @@ class SerialDynamicPlotter(QMainWindow):
     
     # function for clearing data and viewer output
     def clear_data(self):
-        self.data_records = []
-        self.LCD_display.display(0)
-        for sensor_name in self.sensor_data:
-            self.plot_widget.removeItem(self.sensor_data[sensor_name]["plot_data"])
-        self.sensor_data["P"]['buffer'] = CircularBuffer(self.buffer_size)
-        self.add_sensor("P", "r")
+        self.data_records = {}
+        for lcd in [self.LCD_display1, self.LCD_display2, self.LCD_display3, self.LCD_display4]:
+            lcd.display(0)
+        [self.plot_widget.removeItem(data["plot_data"]) for data in self.sensor_data.values()]
+        for channel in self.sensor_data:
+            self.sensor_data[channel]['buffer'] = CircularBuffer(self.buffer_size)
+        
+        self.add_sensor("Ch1", "r")
+        self.add_sensor("Ch2", "g")
+        self.add_sensor("Ch3", "b")
+        self.add_sensor("Ch4", "y")
         self.start_time = time.time()
         self.connect_button.setText("Connect")
         self.status_label.setText("")
         self.update_clear_action_state()
+        
     
 
     # overide closeEvent function
@@ -373,9 +412,9 @@ class SerialDynamicPlotter(QMainWindow):
 
     # handles window closures (needed for dealing with hanging references)
     def exit_application(self):
-        if hasattr(self.main_window, "pressure_window"):
-            delattr(self.main_window, "pressure_window")
-        self.main_window.pressure_button.setEnabled(True)
+        if hasattr(self.window_main, "temperature_window"):
+            delattr(self.window_main, "temperature_window")
+        self.window_main.temp_button.setEnabled(True)
         self.close() 
 
     # function for checking if data was collected
@@ -384,4 +423,3 @@ class SerialDynamicPlotter(QMainWindow):
             self.clear_action.setEnabled(True)   
         else:
             self.clear_action.setEnabled(False) 
-
