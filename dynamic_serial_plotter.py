@@ -155,6 +155,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.sample_input = QLineEdit()
         self.sample_input.setFixedWidth(200)
         self.sample_layout.addWidget(self.sample_input)
+        self.sample_input.textChanged.connect(self.check_condition)
 
         # notes label and input
         self.notes_layout.addWidget(QLabel("Notes"))
@@ -221,8 +222,10 @@ class SerialDynamicPlotter(QMainWindow):
         comport_index = self.com_port_combo.currentText()
         user_name = self.user_input.text()
         instrument_id = self.instrument_input.text()
+        sensor_type = self.sensor_input.text()
+        cartridge = self.sample_input.text()
 
-        if all(len(x.strip()) > 0 for x in [exp_name, comport_index, user_name, instrument_id]):
+        if all(len(x.strip()) > 0 for x in [cartridge, exp_name, comport_index, sensor_type, user_name, instrument_id]):
             self.connect_button.setEnabled(True)
             self.connect_action.setEnabled(True)
         else:

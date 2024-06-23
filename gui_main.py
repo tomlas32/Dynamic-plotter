@@ -5,6 +5,7 @@ from PyQt5.QtGui import QIcon
 import sys
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QLabel, QWidget
 from dynamic_serial_plotter import SerialDynamicPlotter
+from multi_sensor_gui import MultiSensorPlotter
 
 class GuiMain(QMainWindow):
     def __init__(self):
@@ -20,10 +21,10 @@ class GuiMain(QMainWindow):
         title_label.setStyleSheet("font-size: 16px;")  # Set font size for the title
         layout.addWidget(title_label)
 
-        temp_button = QPushButton("Temperature")
-        temp_button.clicked.connect(self.on_temperature_click)
-        temp_button.setStyleSheet("padding: 10px;")  # Add some padding to the button
-        layout.addWidget(temp_button)
+        self.temp_button = QPushButton("Temperature")
+        self.temp_button.clicked.connect(self.on_temperature_click)
+        self.temp_button.setStyleSheet("padding: 10px;")  # Add some padding to the button
+        layout.addWidget(self.temp_button)
 
         self.pressure_button = QPushButton("Pressure")
         self.pressure_button.clicked.connect(self.on_pressure_click)
@@ -39,8 +40,9 @@ class GuiMain(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def on_temperature_click(self):
-        # Code to initiate temperature test would go here
-        self.output_label.setText("Temperature test selected!")
+        self.temperature_window = MultiSensorPlotter(parent = self)
+        self.temperature_window.show()
+        self.temp_button.setEnabled(False)
 
     def on_pressure_click(self):
         self.pressure_window = SerialDynamicPlotter(parent = self)
