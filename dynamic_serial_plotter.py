@@ -53,13 +53,13 @@ class SerialDynamicPlotter(QMainWindow):
         
 
         ########## define GUI window dimentions characteristics #########################
-        self.setWindowTitle("Dynamic Viewer")
+        self.setWindowTitle("Dynamic Pressure Viewer")
         self.setFixedSize(1024, 520)
 
         ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
         self.plot_widget.setBackground("#000000")
-        self.plot_widget.setLabel("left", "Value")
+        self.plot_widget.setLabel("left", "Pressure (mbar)")
         self.plot_widget.setLabel("bottom", "Time (s)")
         self.plot_widget.showGrid(True, True)
         self.plot_widget.setMouseEnabled(x=True, y=False)
@@ -83,6 +83,7 @@ class SerialDynamicPlotter(QMainWindow):
         # initilize right panel layouts for storing widgets
         self.exp_layout = QHBoxLayout()
         self.sample_layout = QHBoxLayout()
+        self.sensor_layout = QHBoxLayout()
         self.user_input_layout = QHBoxLayout()
         self.instrument_layout = QHBoxLayout()
         self.notes_layout = QHBoxLayout()
@@ -102,18 +103,19 @@ class SerialDynamicPlotter(QMainWindow):
         self.top_container.addSpacerItem(spacer_1)
         self.top_container.addLayout(self.user_input_layout)
         self.top_container.addLayout(self.exp_layout)
+        self.top_container.addLayout(self.sensor_layout)
         self.top_container.addLayout(self.instrument_layout)
         self.top_container.addLayout(self.sample_layout)
         self.top_container.addLayout(self.notes_layout)
         self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
         self.top_container.addLayout(self.buttons_layout)
-        self.top_container.addSpacerItem(spacer_2)
 
         self.right_layout.addWidget(self.top_container_widget, alignment=Qt.AlignTop)
         
         # LCD widget and label
-        self.LCD_layout.addWidget(QLabel("Current Sensor Value (mbar)"))
+        self.LCD_label = QLabel("Current Sensor Value (mbar)")
+        self.LCD_layout.addWidget(self.LCD_label)
         self.LCD_display = QLCDNumber()
         self.LCD_display.setFixedHeight(80)
         self.LCD_display.setFixedWidth(300)
@@ -133,6 +135,13 @@ class SerialDynamicPlotter(QMainWindow):
         self.exp_input.setFixedWidth(200)
         self.exp_layout.addWidget(self.exp_input)
         self.exp_input.textChanged.connect(self.check_condition)
+
+        # sensor label and input field
+        self.sensor_layout.addWidget(QLabel("Sensor ID"))
+        self.sensor_input = QLineEdit()
+        self.sensor_input.setFixedWidth(200)
+        self.sensor_layout.addWidget(self.sensor_input)
+        self.sensor_input.textChanged.connect(self.check_condition)
 
         # instrument label and input field
         self.instrument_layout.addWidget(QLabel("Instrument ID"))
@@ -308,7 +317,7 @@ class SerialDynamicPlotter(QMainWindow):
         instrument_id = self.instrument_input.text()
         notes = self.notes_input.toPlainText()
         test_duration = measurements[-1][1]
-        sensor_type = measurements[0][0]
+        sensor_type = self.sensor_input.text()
         
         message = db.store_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
         self.db_message.setText(message)
