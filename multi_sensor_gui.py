@@ -96,9 +96,10 @@ class MultiSensorPlotter(QMainWindow):
         self.top_container_widget = QWidget()
         self.top_container_widget.setLayout(self.top_container)
 
+        spacer_1 = QSpacerItem(300, 10, QSizePolicy.Fixed, QSizePolicy.Fixed)
         # add to right panel layouts
         self.top_container.addLayout(self.LCD_layout)
-        #self.top_container.addSpacerItem(spacer_1)
+        self.top_container.addSpacerItem(spacer_1)
         self.top_container.addLayout(self.user_input_layout)
         self.top_container.addLayout(self.exp_layout)
         self.top_container.addLayout(self.sensor_layout)
