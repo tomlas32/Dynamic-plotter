@@ -14,6 +14,7 @@ class GuiMain(QMainWindow):
         self.setWindowTitle("Test Selection")
         icon = QIcon(".\\assets\\sensor.ico") 
         self.setWindowIcon(icon)
+        self.setFixedSize(250, 200)
 
         layout = QVBoxLayout()
 
