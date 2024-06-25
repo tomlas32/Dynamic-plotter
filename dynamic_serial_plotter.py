@@ -86,6 +86,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.sensor_layout = QHBoxLayout()
         self.user_input_layout = QHBoxLayout()
         self.instrument_layout = QHBoxLayout()
+        self.protocol_input_layout = QHBoxLayout()
         self.notes_layout = QHBoxLayout()
         self.buttons_layout = QHBoxLayout()
         self.LCD_layout = QVBoxLayout()
@@ -105,6 +106,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.top_container.addLayout(self.exp_layout)
         self.top_container.addLayout(self.sensor_layout)
         self.top_container.addLayout(self.instrument_layout)
+        self.top_container.addLayout(self.protocol_input_layout)
         self.top_container.addLayout(self.sample_layout)
         self.top_container.addLayout(self.notes_layout)
         self.top_container.addSpacerItem(spacer_2)
@@ -117,7 +119,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.LCD_label = QLabel("Current Sensor Value (mbar)")
         self.LCD_layout.addWidget(self.LCD_label)
         self.LCD_display = QLCDNumber()
-        self.LCD_display.setFixedHeight(80)
+        self.LCD_display.setFixedHeight(50)
         self.LCD_display.setFixedWidth(300)
         self.LCD_display.setDigitCount(8)
         self.LCD_layout.addWidget(self.LCD_display)
@@ -149,6 +151,12 @@ class SerialDynamicPlotter(QMainWindow):
         self.instrument_input.setFixedWidth(200)
         self.instrument_layout.addWidget(self.instrument_input)
         self.instrument_input.textChanged.connect(self.check_condition)
+
+        # protocol label and input field
+        self.protocol_input_layout.addWidget(QLabel("Protocol"))
+        self.protocol_input = QLineEdit()
+        self.protocol_input.setFixedWidth(200)
+        self.protocol_input_layout.addWidget(self.protocol_input)
 
         # sample label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
@@ -324,8 +332,9 @@ class SerialDynamicPlotter(QMainWindow):
         notes = self.notes_input.toPlainText()
         test_duration = measurements[-1][1]
         sensor_type = self.sensor_input.text()
+        protocol = self.protocol_input.text()
         
-        message = db.store_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
+        message = db.store_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes)
         self.db_message.setText(message)
         self.export_data()
         reply = self.clear_data_display.exec_()

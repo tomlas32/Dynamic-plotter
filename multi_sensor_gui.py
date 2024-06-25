@@ -85,6 +85,7 @@ class MultiSensorPlotter(QMainWindow):
         self.sensor_layout = QHBoxLayout()
         self.user_input_layout = QHBoxLayout()
         self.instrument_layout = QHBoxLayout()
+        self.protocol_input_layout = QHBoxLayout()
         self.notes_layout = QHBoxLayout()
         self.buttons_layout = QHBoxLayout()
         self.LCD_layout = QVBoxLayout()
@@ -104,9 +105,9 @@ class MultiSensorPlotter(QMainWindow):
         self.top_container.addLayout(self.exp_layout)
         self.top_container.addLayout(self.sensor_layout)
         self.top_container.addLayout(self.instrument_layout)
+        self.top_container.addLayout(self.protocol_input_layout)
         self.top_container.addLayout(self.sample_layout)
         self.top_container.addLayout(self.notes_layout)
-        #self.top_container.addSpacerItem(spacer_2)
         self.top_container.addLayout(self.COM_layout)
         self.top_container.addLayout(self.buttons_layout)
 
@@ -174,6 +175,12 @@ class MultiSensorPlotter(QMainWindow):
         self.instrument_input.setFixedWidth(200)
         self.instrument_layout.addWidget(self.instrument_input)
         self.instrument_input.textChanged.connect(self.check_condition)
+
+        # protocol label and input field
+        self.protocol_input_layout.addWidget(QLabel("Protocol"))
+        self.protocol_input = QLineEdit()
+        self.protocol_input.setFixedWidth(200)
+        self.protocol_input_layout.addWidget(self.protocol_input)
 
         # sample label and input field
         self.sample_layout.addWidget(QLabel("Cartridge"))
@@ -357,8 +364,9 @@ class MultiSensorPlotter(QMainWindow):
         notes = self.notes_input.toPlainText()
         test_duration = measurements["Ch4"][-1][0]
         sensor_type = self.sensor_input.text()
+        protocol = self.protocol_input.text()
         
-        message = db.store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, cartridge_number, test_duration, measurements, notes)
+        message = db.store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes)
         self.db_message.setText(message)
         self.export_data()
         reply = self.clear_data_display.exec_()
