@@ -356,26 +356,29 @@ class MultiSensorPlotter(QMainWindow):
 
     # define a helper function for exporting data and saving it into database
     def export_helper(self):
-        measurements = self.data_records
-        experiment_name = self.exp_input.text()
-        cartridge_number = self.sample_input.text()
-        user_id = self.user_input.text()
-        instrument_id = self.instrument_input.text()
-        notes = self.notes_input.toPlainText()
-        test_duration = measurements["Ch4"][-1][0]
-        sensor_type = self.sensor_input.text()
-        protocol = self.protocol_input.text()
-        
-        message = db.store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes)
-        self.db_message.setText(message)
-        self.export_data()
-        reply = self.clear_data_display.exec_()
-        if reply == QMessageBox.Yes:
-            self.clear_data()
-            self.update_clear_action_state()
-        elif reply == QMessageBox.No:
-            self.update_clear_action_state()
-            QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
+        if len(self.data_records) > 0:
+            measurements = self.data_records
+            experiment_name = self.exp_input.text()
+            cartridge_number = self.sample_input.text()
+            user_id = self.user_input.text()
+            instrument_id = self.instrument_input.text()
+            notes = self.notes_input.toPlainText()
+            test_duration = measurements["Ch4"][-1][0]
+            sensor_type = self.sensor_input.text()
+            protocol = self.protocol_input.text()
+            
+            message = db.store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes)
+            self.db_message.setText(message)
+            self.export_data()
+            reply = self.clear_data_display.exec_()
+            if reply == QMessageBox.Yes:
+                self.clear_data()
+                self.update_clear_action_state()
+            elif reply == QMessageBox.No:
+                self.update_clear_action_state()
+                QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
+        else:
+            QMessageBox.warning(self, "Export error", "No data to export.")
 
 
     def export_data(self):
