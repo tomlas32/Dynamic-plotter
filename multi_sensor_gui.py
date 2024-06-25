@@ -10,6 +10,7 @@ import time
 import database as db
 from SerialMonitor import SerialPortMonitor
 import sys
+import os
 
 class MultiSensorPlotter(QMainWindow):
     def __init__(self, parent = None):
@@ -17,7 +18,7 @@ class MultiSensorPlotter(QMainWindow):
         self.window_main = parent
         self.closed = pyqtSignal()
 
-        icon = QIcon(".\\assets\\sensor.ico")
+        icon = QIcon(self.resource_path("assets/sensor.ico"))
         self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
@@ -444,3 +445,12 @@ class MultiSensorPlotter(QMainWindow):
             self.clear_action.setEnabled(True)   
         else:
             self.clear_action.setEnabled(False) 
+    
+    def resource_path(self, relative_path):
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS2
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)

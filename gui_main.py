@@ -6,13 +6,14 @@ import sys
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QLabel, QWidget
 from dynamic_serial_plotter import SerialDynamicPlotter
 from multi_sensor_gui import MultiSensorPlotter
+import os
 
 class GuiMain(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Test Selection")
-        icon = QIcon(".\\assets\\sensor.ico") 
+        icon = QIcon(self.resource_path("assets/sensor.ico")) 
         self.setWindowIcon(icon)
         self.setFixedSize(250, 200)
 
@@ -49,3 +50,12 @@ class GuiMain(QMainWindow):
         self.pressure_window = SerialDynamicPlotter(parent = self)
         self.pressure_window.show()
         self.pressure_button.setEnabled(False)
+
+    def resource_path(self, relative_path):
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS2
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path)

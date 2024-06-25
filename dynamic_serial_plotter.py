@@ -6,7 +6,7 @@ from PyQt5.QtSerialPort import QSerialPort
 from PyQt5.QtGui import QIcon
 from buffer import CircularBuffer
 import csv
-import time
+import time, os, sys
 import database as db
 from SerialMonitor import SerialPortMonitor
 
@@ -18,7 +18,7 @@ class SerialDynamicPlotter(QMainWindow):
         self.closed = pyqtSignal()
 
 
-        icon = QIcon(".\\assets\\sensor.ico") 
+        icon = QIcon(self.resource_path("assets/sensor.ico")) 
         self.setWindowIcon(icon)
         # initialize variables
         self.sensor_data = {}                                                                       # dictionary for storing the data
@@ -392,5 +392,14 @@ class SerialDynamicPlotter(QMainWindow):
         if self.data_records or self.sensor_data: 
             self.clear_action.setEnabled(True)   
         else:
-            self.clear_action.setEnabled(False) 
+            self.clear_action.setEnabled(False)
+
+    def resource_path(self, relative_path):
+        try:
+            # PyInstaller creates a temp folder and stores path in _MEIPASS
+            base_path = sys._MEIPASS2
+        except Exception:
+            base_path = os.path.abspath(".")
+
+        return os.path.join(base_path, relative_path) 
 
