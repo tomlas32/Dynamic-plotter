@@ -37,16 +37,16 @@ class MultiSensorPlotter(QMainWindow):
         
         # Connection submenu
         self.connect_action = QAction("Connect", self)
-        #self.connect_action.triggered.connect(self.toggle_connect)
+        self.connect_action.triggered.connect(self.toggle_connect)
         self.connect_action.setEnabled(False)
         self.disconnect_action = QAction("Disconnect", self)
         self.disconnect_action.setEnabled(False)
         self.disconnect_action
         self.clear_action = QAction("Clear", self)
-        #self.clear_action.triggered.connect(self.clear_data)
+        self.clear_action.triggered.connect(self.clear_data)
         self.clear_action.setEnabled(False)
         exit_action = QAction("Exit", self)
-        #exit_action.triggered.connect(self.exit_application)
+        exit_action.triggered.connect(self.exit_application)
         self.file_menu.addAction(self.connect_action)
         self.file_menu.addAction(self.disconnect_action)
         self.file_menu.addAction(self.clear_action)
