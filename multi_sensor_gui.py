@@ -340,8 +340,13 @@ class MultiSensorPlotter(QMainWindow):
                         buf = self.sensor_data[channel]['buffer']                                                                   # Get the buffer directly from self.sensor_data
                         plot = self.sensor_data[channel]['plot_data']
                         buf.push((timestamp, value))                                                                                # Update buffer
+
+                        # down sample data for plotting
                         x_data, y_data = buf.get_data_for_plot()
-                        plot.setData(x_data, y_data)                                                                                # Update plot
+                        downsampled_x = x_data[::2]
+                        downsampled_y = y_data[::2]
+                        #plot.setData(x_data, y_data)                                                                                # Update plot
+                        plot.setData(x=downsampled_x, y=downsampled_y)
                         if channel not in self.data_records:
                             self.data_records[channel] = []
                         self.data_records[channel].append([timestamp, value])
@@ -350,7 +355,6 @@ class MultiSensorPlotter(QMainWindow):
                 self.LCD_display2.display(formatted_values[1])
                 self.LCD_display3.display(formatted_values[2])
                 self.LCD_display4.display(formatted_values[3])
-                time.sleep(0.01)
             except(UnicodeDecodeError, IndexError, ValueError):
                 pass
 
