@@ -343,8 +343,8 @@ class MultiSensorPlotter(QMainWindow):
 
                         # down sample data for plotting
                         x_data, y_data = buf.get_data_for_plot()
-                        downsampled_x = x_data[::2]
-                        downsampled_y = y_data[::2]
+                        downsampled_x = x_data[::4]
+                        downsampled_y = y_data[::4]
                         #plot.setData(x_data, y_data)                                                                                # Update plot
                         plot.setData(x=downsampled_x, y=downsampled_y)
                         if channel not in self.data_records:
