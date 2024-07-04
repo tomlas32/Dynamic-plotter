@@ -24,7 +24,7 @@ class MultiSensorPlotter(QMainWindow):
         self.sensor_data = {}                                                                       # dictionary for storing the data
         self.com_port_names = []                                                                    # list for storing active COM ports
         self.data_records = {}                                                                      # list for storing sensor data for export
-        self.buffer_size = 10000
+        self.buffer_size = 20000
         self.is_connected = False
         self.is_paused = False
         self.first_time_point = None
