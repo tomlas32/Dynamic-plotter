@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QAction
 from PyQt5.QtGui import QIcon
 import sys
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QVBoxLayout, QLabel, QWidget
-from dynamic_serial_plotter import SerialDynamicPlotter
+from single_sensor_gui import SerialDynamicPlotter
 from multi_sensor_gui import MultiSensorPlotter
 import os
 

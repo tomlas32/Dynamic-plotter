@@ -54,7 +54,7 @@ class MultiSensorPlotter(QMainWindow):
 
         ########## define GUI window dimentions characteristics #########################
         self.setWindowTitle("Dynamic Temerature Viewer")
-        self.setFixedSize(1024, 520)
+        self.setGeometry(100, 100, 1024, 520)
 
         ########## define plot area widget characteristics ##############################
         self.plot_widget = pgt.PlotWidget()
