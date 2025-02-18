@@ -1,5 +1,16 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLineEdit
+from PyQt5.QtWidgets import (
+    QApplication,
+    QVBoxLayout,
+    QHBoxLayout,
+    QMainWindow,
+    QWidget,
+    QPushButton,
+    QComboBox,
+    QMessageBox,
+    QLabel,
+    QLineEdit,
+)
 from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QAction
 from PyQt5.QtGui import QIcon
 import sys
@@ -8,12 +19,13 @@ from single_sensor_gui import SerialDynamicPlotter
 from multi_sensor_gui import MultiSensorPlotter
 import os
 
+
 class GuiMain(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.setWindowTitle("Test Selection")
-        icon = QIcon(self.resource_path("assets/sensor.ico")) 
+        icon = QIcon(self.resource_path("assets/sensor.ico"))
         self.setWindowIcon(icon)
         self.setFixedSize(250, 200)
 
@@ -25,7 +37,9 @@ class GuiMain(QMainWindow):
 
         self.temp_button = QPushButton("Temperature")
         self.temp_button.clicked.connect(self.on_temperature_click)
-        self.temp_button.setStyleSheet("padding: 10px;")  # Add some padding to the button
+        self.temp_button.setStyleSheet(
+            "padding: 10px;"
+        )  # Add some padding to the button
         layout.addWidget(self.temp_button)
 
         self.pressure_button = QPushButton("Pressure")
@@ -42,12 +56,12 @@ class GuiMain(QMainWindow):
         self.setCentralWidget(central_widget)
 
     def on_temperature_click(self):
-        self.temperature_window = MultiSensorPlotter(parent = self)
+        self.temperature_window = MultiSensorPlotter(parent=self)
         self.temperature_window.show()
         self.temp_button.setEnabled(False)
 
     def on_pressure_click(self):
-        self.pressure_window = SerialDynamicPlotter(parent = self)
+        self.pressure_window = SerialDynamicPlotter(parent=self)
         self.pressure_window.show()
         self.pressure_button.setEnabled(False)
 

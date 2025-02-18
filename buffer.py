@@ -1,6 +1,7 @@
 import numpy as np
 
-#define buffer - using circular approach
+
+# define buffer - using circular approach
 class CircularBuffer:
     # constructor for circular buffer
     def __init__(self, max_size):
@@ -12,15 +13,19 @@ class CircularBuffer:
     # get function for fetching data from the buffer
     def get_data(self):
         if self.full:
-            return np.concatenate((self.buffer[self.index:], self.buffer[:self.index]))
+            return np.concatenate(
+                (self.buffer[self.index :], self.buffer[: self.index])
+            )
         else:
-            return self.buffer[:self.index]
-    
+            return self.buffer[: self.index]
+
     def get_data_for_plot(self):
         data = self.get_data()
         if data.size > 0:
             timestamp, values = zip(*data)
-            return np.array(timestamp, dtype=np.float64), np.array(values, dtype=np.float64)
+            return np.array(timestamp, dtype=np.float64), np.array(
+                values, dtype=np.float64
+            )
         else:
             return np.array([], dtype=np.float64), np.array([], dtype=np.float64)
 

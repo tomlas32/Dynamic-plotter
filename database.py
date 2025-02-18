@@ -10,7 +10,17 @@ collection1 = db[credentials.COLLECTION_NAME1]
 
 
 # function for saving pressure data into databse
-def store_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes):
+def store_measurements(
+    user_id,
+    sensor_type,
+    experiment_name,
+    instrument_id,
+    protocol,
+    cartridge_number,
+    test_duration,
+    measurements,
+    notes,
+):
     test_date = datetime.now().strftime("%Y-%m-%d")
     test_time = datetime.now().strftime("%H:%M:%S")
 
@@ -25,15 +35,26 @@ def store_measurements(user_id, sensor_type, experiment_name, instrument_id, pro
         "cartridge_number": cartridge_number,
         "test_duration": test_duration,
         "pressure_measurements": measurements,
-        "notes": notes
+        "notes": notes,
     }
     result = collection.insert_one(record)
     confirmation_msg = f"Session data inserted with ID: {result.inserted_id}"
 
     return confirmation_msg
 
+
 # function for saving temp data into databse
-def store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes):
+def store_temp_measurements(
+    user_id,
+    sensor_type,
+    experiment_name,
+    instrument_id,
+    protocol,
+    cartridge_number,
+    test_duration,
+    measurements,
+    notes,
+):
     test_date = datetime.now().strftime("%Y-%m-%d")
     test_time = datetime.now().strftime("%H:%M:%S")
 
@@ -48,7 +69,7 @@ def store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id
         "cartridge_number": cartridge_number,
         "test_duration": test_duration,
         "temp_measurements": measurements,
-        "notes": notes
+        "notes": notes,
     }
     result = collection1.insert_one(record)
     confirmation_msg = f"Session data inserted with ID: {result.inserted_id}"

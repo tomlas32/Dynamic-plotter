@@ -1,6 +1,19 @@
 import pyqtgraph as pgt
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtWidgets import QApplication, QVBoxLayout, QHBoxLayout, QFileDialog, QMainWindow, QWidget, QPushButton, QComboBox, QMessageBox, QLabel, QLCDNumber, QLineEdit
+from PyQt5.QtWidgets import (
+    QApplication,
+    QVBoxLayout,
+    QHBoxLayout,
+    QFileDialog,
+    QMainWindow,
+    QWidget,
+    QPushButton,
+    QComboBox,
+    QMessageBox,
+    QLabel,
+    QLCDNumber,
+    QLineEdit,
+)
 from PyQt5.QtWidgets import QSizePolicy, QSpacerItem, QTextEdit, QAction
 from PyQt5.QtSerialPort import QSerialPort
 from PyQt5.QtGui import QIcon
@@ -12,8 +25,9 @@ from SerialMonitor import SerialPortMonitor
 import sys
 import os
 
+
 class MultiSensorPlotter(QMainWindow):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
         self.window_main = parent
         self.closed = pyqtSignal()
@@ -21,20 +35,20 @@ class MultiSensorPlotter(QMainWindow):
         icon = QIcon(self.resource_path("assets/sensor.ico"))
         self.setWindowIcon(icon)
         # initialize variables
-        self.sensor_data = {}                                                                       # dictionary for storing the data
-        self.com_port_names = []                                                                    # list for storing active COM ports
-        self.data_records = {}                                                                      # list for storing sensor data for export
+        self.sensor_data = {}  # dictionary for storing the data
+        self.com_port_names = []  # list for storing active COM ports
+        self.data_records = {}  # list for storing sensor data for export
         self.buffer_size = 20000
         self.is_connected = False
         self.is_paused = False
         self.first_time_point = None
 
         ########## FIle menu #########
-        self.menubar = self.menuBar() 
+        self.menubar = self.menuBar()
         self.file_menu = self.menubar.addMenu("File")
         self.settings_menu = self.menubar.addMenu("Settings")
         self.help_menu = self.menubar.addMenu("Help")
-        
+
         # Connection submenu
         self.connect_action = QAction("Connect", self)
         self.connect_action.triggered.connect(self.toggle_connect)
@@ -66,17 +80,17 @@ class MultiSensorPlotter(QMainWindow):
         self.plot_widget.setClipToView(True)
 
         ########## build the viewer widgets #############################################
-        self.main_layout = QHBoxLayout()                                                                 # main layout to store 2 VBoxes
-        self.window = QWidget() 
+        self.main_layout = QHBoxLayout()  # main layout to store 2 VBoxes
+        self.window = QWidget()
 
         # left panel Widgets
-        self.left_layout = QVBoxLayout()                                                                
-        self.left_panel = QWidget()                                                                    
+        self.left_layout = QVBoxLayout()
+        self.left_panel = QWidget()
         self.left_panel.setLayout(self.left_layout)
         self.left_layout.addWidget(self.plot_widget)
 
         # right panel Widgets
-        self.right_layout = QVBoxLayout()                                                                # layout for data entry
+        self.right_layout = QVBoxLayout()  # layout for data entry
         self.right_panel = QWidget()
         self.right_panel.setLayout(self.right_layout)
 
@@ -214,15 +228,17 @@ class MultiSensorPlotter(QMainWindow):
         self.export_button.clicked.connect(self.export_helper)
 
         # add to main layout
-        self.main_layout.addWidget(self.left_panel)                                                  
-        self.main_layout.addWidget(self.right_panel) 
+        self.main_layout.addWidget(self.left_panel)
+        self.main_layout.addWidget(self.right_panel)
 
         # set main window layout
         self.window.setLayout(self.main_layout)
-        self.setCentralWidget(self.window) 
+        self.setCentralWidget(self.window)
 
         # create connect button for establishing serial communication
-        self.status_label = QLabel("")                                                              # reporting on successful connection/disconnection
+        self.status_label = QLabel(
+            ""
+        )  # reporting on successful connection/disconnection
         self.left_layout.addWidget(self.status_label)
 
         # database entry confirmation message
@@ -232,7 +248,9 @@ class MultiSensorPlotter(QMainWindow):
         # create a message box for clearing current data display
         self.clear_data_display = QMessageBox()
         self.clear_data_display.setWindowTitle("Choose Option")
-        self.clear_data_display.setText("Would you like to reset the viewer and clear the data?")
+        self.clear_data_display.setText(
+            "Would you like to reset the viewer and clear the data?"
+        )
         self.clear_data_display.setIcon(QMessageBox.Question)
         self.clear_data_display.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
 
@@ -240,7 +258,7 @@ class MultiSensorPlotter(QMainWindow):
         self.serial_monitor = SerialPortMonitor()
         self.serial_monitor.port_changed.connect(self.update_com_port_combo)
         self.update_com_port_combo()
-        
+
         # initialize and configure a QSerialPort object for serial communication
         self.serial_port = QSerialPort()
         self.serial_port.setBaudRate(115200)
@@ -251,7 +269,7 @@ class MultiSensorPlotter(QMainWindow):
         self.add_sensor("Ch2", "g")
         self.add_sensor("Ch3", "b")
         self.add_sensor("Ch4", "y")
-    
+
     # function for checking if all condition for establishing connection are met
     def check_condition(self):
         exp_name = self.exp_input.text()
@@ -261,7 +279,17 @@ class MultiSensorPlotter(QMainWindow):
         sensor_type = self.sensor_input.text()
         cartridge = self.sample_input.text()
 
-        if all(len(x.strip()) > 0 for x in [cartridge, exp_name, comport_index, sensor_type, user_name, instrument_id]):
+        if all(
+            len(x.strip()) > 0
+            for x in [
+                cartridge,
+                exp_name,
+                comport_index,
+                sensor_type,
+                user_name,
+                instrument_id,
+            ]
+        ):
             self.connect_button.setEnabled(True)
             self.connect_action.setEnabled(True)
         else:
@@ -274,20 +302,25 @@ class MultiSensorPlotter(QMainWindow):
         for port_name in self.serial_monitor.current_ports:
             self.com_port_combo.addItem(port_name)
         if current_port in self.serial_monitor.current_ports:
-            self.com_port_combo.setCurrentText(current_port)  
+            self.com_port_combo.setCurrentText(current_port)
 
     def add_sensor(self, name, color):
         self.sensor_data[name] = {
-            'buffer': CircularBuffer(self.buffer_size),
-            'plot_data': self.plot_widget.plot(pen=pgt.mkPen(color, width=2), name=name),
-        }   
+            "buffer": CircularBuffer(self.buffer_size),
+            "plot_data": self.plot_widget.plot(
+                pen=pgt.mkPen(color, width=2), name=name
+            ),
+        }
 
     def change_com_port(self):
         self.serial_port.setPortName(self.com_port_combo.currentText())
 
     # define toggle function for switching between connect and pause states
     def toggle_connect(self):
-        if self.connect_button.text() == "Connect" or self.connect_button.text() == "Resume":
+        if (
+            self.connect_button.text() == "Connect"
+            or self.connect_button.text() == "Resume"
+        ):
             port_name = self.com_port_combo.currentText()
             self.serial_port.setPortName(port_name)
             if not self.serial_port.isOpen():  # Check if the port is not already open
@@ -306,21 +339,21 @@ class MultiSensorPlotter(QMainWindow):
             self.serial_port.close()  # Close the port when pausing
             self.connect_button.setText("Resume")
 
-    # function for establishing serial communication 
+    # function for establishing serial communication
     def port_connect(self):
         self.is_paused = False
         self.is_connected = True
         # if the pause button was clicked we are going to use the previously recorded time
-        if hasattr(self, 'pause_time'):
+        if hasattr(self, "pause_time"):
             if self.data_records == {}:
                 self.start_time = time.time()
             else:
-                self.start_time += time.time() - self.pause_time 
-            del self.pause_time   # Reset pause_time after resuming
-        # Start from scratch if it's the first time connecting    
-        else:  
+                self.start_time += time.time() - self.pause_time
+            del self.pause_time  # Reset pause_time after resuming
+        # Start from scratch if it's the first time connecting
+        else:
             self.start_time = time.time()
-    
+
     # function for pausing data stream and plotting
     def port_pause(self):
         self.is_paused = True
@@ -332,32 +365,42 @@ class MultiSensorPlotter(QMainWindow):
         self.serial_port.flush()
         while self.serial_port.canReadLine():
             try:
-                values = [float(x) for x in self.serial_port.readLine().data().decode("utf-8", errors="ignore").strip().split(",")]
+                values = [
+                    float(x)
+                    for x in self.serial_port.readLine()
+                    .data()
+                    .decode("utf-8", errors="ignore")
+                    .strip()
+                    .split(",")
+                ]
                 formatted_values = ["{:.2f}".format(v) for v in values]
                 if self.is_connected and not self.is_paused:
                     timestamp = format(float(time.time() - self.start_time), ".2f")
-                    for channel, value in zip(["Ch1", "Ch2", "Ch3", "Ch4"], formatted_values):
-                        buf = self.sensor_data[channel]['buffer']                                                                   # Get the buffer directly from self.sensor_data
-                        plot = self.sensor_data[channel]['plot_data']
-                        buf.push((timestamp, value))                                                                                # Update buffer
+                    for channel, value in zip(
+                        ["Ch1", "Ch2", "Ch3", "Ch4"], formatted_values
+                    ):
+                        buf = self.sensor_data[channel][
+                            "buffer"
+                        ]  # Get the buffer directly from self.sensor_data
+                        plot = self.sensor_data[channel]["plot_data"]
+                        buf.push((timestamp, value))  # Update buffer
 
                         # down sample data for plotting
                         x_data, y_data = buf.get_data_for_plot()
                         downsampled_x = x_data[::4]
                         downsampled_y = y_data[::4]
-                        #plot.setData(x_data, y_data)                                                                                # Update plot
+                        # plot.setData(x_data, y_data)                                                                                # Update plot
                         plot.setData(x=downsampled_x, y=downsampled_y)
                         if channel not in self.data_records:
                             self.data_records[channel] = []
                         self.data_records[channel].append([timestamp, value])
-                    
+
                 self.LCD_display1.display(formatted_values[0])
                 self.LCD_display2.display(formatted_values[1])
                 self.LCD_display3.display(formatted_values[2])
                 self.LCD_display4.display(formatted_values[3])
-            except(UnicodeDecodeError, IndexError, ValueError):
+            except (UnicodeDecodeError, IndexError, ValueError):
                 pass
-
 
     # define a helper function for exporting data and saving it into database
     def export_helper(self):
@@ -371,8 +414,18 @@ class MultiSensorPlotter(QMainWindow):
             test_duration = measurements["Ch4"][-1][0]
             sensor_type = self.sensor_input.text()
             protocol = self.protocol_input.text()
-            
-            message = db.store_temp_measurements(user_id, sensor_type, experiment_name, instrument_id, protocol, cartridge_number, test_duration, measurements, notes)
+
+            message = db.store_temp_measurements(
+                user_id,
+                sensor_type,
+                experiment_name,
+                instrument_id,
+                protocol,
+                cartridge_number,
+                test_duration,
+                measurements,
+                notes,
+            )
             self.db_message.setText(message)
             self.export_data()
             reply = self.clear_data_display.exec_()
@@ -381,46 +434,75 @@ class MultiSensorPlotter(QMainWindow):
                 self.update_clear_action_state()
             elif reply == QMessageBox.No:
                 self.update_clear_action_state()
-                QMessageBox.warning(self, "Current session", "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.")
+                QMessageBox.warning(
+                    self,
+                    "Current session",
+                    "Current session was not cleared. All data will be concatenated and submitted as a new entry. Rest plotter if you wish to avoid it.",
+                )
         else:
             QMessageBox.warning(self, "Export error", "No data to export.")
 
-
     def export_data(self):
         if len(self.data_records) > 0:
-            filename, _ = QFileDialog.getSaveFileName(self, "Export Data", "", "CSV Files (*.csv)")
+            filename, _ = QFileDialog.getSaveFileName(
+                self, "Export Data", "", "CSV Files (*.csv)"
+            )
             if filename:
                 try:
                     with open(filename, "w", newline="") as file:
                         writer = csv.writer(file)
-                        channels = list(self.data_records.keys())             # Get all channel names
+                        channels = list(
+                            self.data_records.keys()
+                        )  # Get all channel names
                         writer.writerow(["Time"] + channels)
 
-                        for i in range(len(self.data_records[channels[0]])):  # Iterate over timestamps in any channel
-                            timestamp = self.data_records[channels[0]][i][0]  # Extract timestamp directly
+                        for i in range(
+                            len(self.data_records[channels[0]])
+                        ):  # Iterate over timestamps in any channel
+                            timestamp = self.data_records[channels[0]][i][
+                                0
+                            ]  # Extract timestamp directly
                             row = [timestamp]
 
                             for channel in channels:
-                                value = self.data_records[channel][i][1]      # Extract value directly
-                                row.append(value)                             # Append value for each channel for a given timestamp
-                            writer.writerow(row)                             # Write the row data into csv (timestamp and 4 channels data) per each timestamp iteration
-                    QMessageBox.information(self, "Success", "Data successfully exported to " + filename)
+                                value = self.data_records[channel][i][
+                                    1
+                                ]  # Extract value directly
+                                row.append(
+                                    value
+                                )  # Append value for each channel for a given timestamp
+                            writer.writerow(
+                                row
+                            )  # Write the row data into csv (timestamp and 4 channels data) per each timestamp iteration
+                    QMessageBox.information(
+                        self, "Success", "Data successfully exported to " + filename
+                    )
                 except Exception as e:
-                    QMessageBox.warning(self, "Error", "Failed to export data: " + str(e))
+                    QMessageBox.warning(
+                        self, "Error", "Failed to export data: " + str(e)
+                    )
             else:
                 QMessageBox.warning(self, "Export error", "Invalid file name.")
         else:
             QMessageBox.warning(self, "Export error", "No data to export.")
-    
+
     # function for clearing data and viewer output
     def clear_data(self):
         self.data_records = {}
-        for lcd in [self.LCD_display1, self.LCD_display2, self.LCD_display3, self.LCD_display4]:
+        for lcd in [
+            self.LCD_display1,
+            self.LCD_display2,
+            self.LCD_display3,
+            self.LCD_display4,
+        ]:
             lcd.display(0)
-        [self.plot_widget.removeItem(data["plot_data"]) for data in self.sensor_data.values()]
+        [
+            self.plot_widget.removeItem(data["plot_data"])
+            for data in self.sensor_data.values()
+        ]
         for channel in self.sensor_data:
-            self.sensor_data[channel]['buffer'] = CircularBuffer(self.buffer_size)
-        
+            self.sensor_data[channel]["buffer"] = CircularBuffer(self.buffer_size)
+
         self.add_sensor("Ch1", "r")
         self.add_sensor("Ch2", "g")
         self.add_sensor("Ch3", "b")
@@ -429,8 +511,6 @@ class MultiSensorPlotter(QMainWindow):
         self.connect_button.setText("Connect")
         self.status_label.setText("")
         self.update_clear_action_state()
-        
-    
 
     # overide closeEvent function
     def closeEvent(self, event):
@@ -441,15 +521,15 @@ class MultiSensorPlotter(QMainWindow):
         if hasattr(self.window_main, "temperature_window"):
             delattr(self.window_main, "temperature_window")
         self.window_main.temp_button.setEnabled(True)
-        self.close() 
+        self.close()
 
     # function for checking if data was collected
     def update_clear_action_state(self):
-        if self.data_records or self.sensor_data: 
-            self.clear_action.setEnabled(True)   
+        if self.data_records or self.sensor_data:
+            self.clear_action.setEnabled(True)
         else:
-            self.clear_action.setEnabled(False) 
-    
+            self.clear_action.setEnabled(False)
+
     def resource_path(self, relative_path):
         try:
             # PyInstaller creates a temp folder and stores path in _MEIPASS
